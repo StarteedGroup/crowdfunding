@@ -1,0 +1,38 @@
+<?php
+
+namespace Starteed\Resources;
+
+use Starteed\Reward;
+use Starteed\Donation;
+use Starteed\Resources\ResourceBase;
+use Starteed\Resources\TransactionResource;
+
+class RewardResource extends ResourceBase
+{
+    protected $campaign;
+
+    public function __construct(Reward $reward, array $data)
+    {
+        $this->campaign = $reward->campaign;
+        $this->resource = json_decode(json_encode($data));
+        parent::__construct($reward->starteed, "{$reward->endpoint}/{$this->id}");
+    }
+
+    public function __get($property)
+    {
+        if (property_exists($this->resource, $property)) {
+          return $this->resource->$property;
+
+        }
+    }
+
+    public function donate(array $params)
+    {
+        $params['IDEXT_Reward'] = $this->id;
+        $donation = new Donation($this->campaign);
+        $response = $donation->post($params);
+        $body = $response->getBody();
+
+        return new TransactionResource(new Transaction($this), $body['data']);
+    }
+}
