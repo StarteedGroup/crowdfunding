@@ -32,7 +32,7 @@ class Crowdfunding
      *
      * @var string
      */
-    protected $version = '0.1';
+    protected $version = '1.0';
 
     /**
      * HTTP client used to make requests
