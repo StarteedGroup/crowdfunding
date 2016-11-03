@@ -61,9 +61,9 @@ class Crowdfunding
      * @var array
      */
     protected static $default_options = [
-        'host' => 'api-alpha.starteed.com',
-        'protocol' => 'http',
-        'port' => 80,
+        'host' => 'api.starteed.com',
+        'protocol' => 'https',
+        'port' => 443,
         'key' => '',
         'version' => 'v1',
         'platform' => null,
