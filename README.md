@@ -22,7 +22,7 @@ Starteed Crowdfunding requires php-http client: we suggest Guzzle6.
 
 Next install the package.
 
-    composer require prometherion/starteed-crowdfunding
+    composer require starteed/crowdfunding
 
 
 ## Setting up a Request Adapter
