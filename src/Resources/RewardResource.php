@@ -18,14 +18,6 @@ class RewardResource extends ResourceBase
         parent::__construct($reward->starteed, "{$reward->endpoint}/{$this->id}");
     }
 
-    public function __get($property)
-    {
-        if (property_exists($this->resource, $property)) {
-          return $this->resource->$property;
-
-        }
-    }
-
     public function donate(array $params)
     {
         $params['IDEXT_Reward'] = $this->id;

@@ -42,11 +42,6 @@ class CampaignResource extends ResourceBase
         return new TransactionResource(new Transaction($this), $body['data']);
     }
 
-    public function __get($property)
     {
-        if (property_exists($this->resource, $property)) {
-          return $this->resource->$property;
-
-        }
     }
 }

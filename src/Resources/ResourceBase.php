@@ -36,6 +36,38 @@ class ResourceBase
         $this->starteed = $starteed;
         $this->endpoint = $endpoint;
     }
+    /**
+     * Magic method __call is optimized to return value from template engine like Twig.
+     *
+     * @param string $method the method to invoke
+     * @param array  $args   the parameters to pass to function
+     *
+     * @return mixed Return property or function return
+     */
+    public function __call($method, $args)
+    {
+        if (
+            is_array($args) and count($args) == 0
+            && !method_exists($this, $method)
+        ) {
+            return $this->__get($method);
+
+        }
+    }
+    /**
+     * Basic getter lookin in protected property $resource 
+     *
+     * @param string $property the property to look for
+     *
+     * @return mixed|null the resource property or null if not found
+     */
+    public function __get($property)
+    {
+        if (property_exists($this->resource, $property)) {
+          return $this->resource->$property;
+
+        }
+    }
 
     /**
      * Sends get request to API at the set endpoint.
