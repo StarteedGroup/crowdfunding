@@ -7,9 +7,10 @@ use LogicException;
 use Http\Client\HttpClient;
 use Http\Client\HttpAsyncClient;
 use Http\Message\RequestFactory;
+use Starteed\Responses\JWTResponse;
 use Psr\Http\Message\RequestInterface;
-use Http\Discovery\MessageFactoryDiscovery;
 use Starteed\Responses\StarteedResponse;
+use Http\Discovery\MessageFactoryDiscovery;
 use Starteed\Exceptions\StarteedException;
 
 /**
@@ -67,8 +68,44 @@ class Crowdfunding
         'key' => '',
         'version' => 'v1',
         'platform' => null,
-        'language' => 'it_IT'
+        'language' => 'it_IT',
+        'authorization' => null
     ];
+
+    /**
+     * Instance of Campaign class
+     *
+     * @var Platform
+     */
+    public $platform;
+
+    /**
+     * Instance of General class
+     *
+     * @var General
+     */
+    public $general;
+
+    /**
+     * Instance of Layout class
+     *
+     * @var General
+     */
+    public $layout;
+
+    /**
+     * Instance of Version class
+     *
+     * @var Version
+     */
+    public $versions;
+
+    /**
+     * Instance of Section class
+     *
+     * @var Version
+     */
+    public $sections;
 
     /**
      * Instance of Campaign class
@@ -83,7 +120,7 @@ class Crowdfunding
      * @param HttpClient $http_client - An httplug client or adapter
      * @param array      $options     - An array to overide default options
      */
-    public function __construct($http_client, array $options)
+    public function __construct(HttpClient $http_client, array $options)
     {
         $this->setOptions($options);
         $this->setHttpClient($http_client);
@@ -158,10 +195,11 @@ class Crowdfunding
             'User-Agent' => 'php-starteed-crowdfunding/'.$this->version,
             'Content-Type' => 'application/json',
             'X-Relay-Host' => $this->options['platform'],
-            'Accept-Language' => $this->options['language']
+            'Accept-Language' => $this->options['language'],
+            'Authorization' => null
         ];
-        if (array_key_exists('jwt', $this->options) && $this->options['jwt']) {
-            $constantHeaders['Authorization'] = 'Bearer ' . $this->options['jwt'];
+        if (array_key_exists('authorization', $this->options) && $this->options['authorization']) {
+            $constantHeaders['Authorization'] = 'Bearer ' . $this->options['authorization'];
 
         }
         foreach ($constantHeaders as $key => $value) {
@@ -184,11 +222,28 @@ class Crowdfunding
         $options = $this->options;
         $paramsArray = [];
         foreach ($params as $key => $value) {
-            if (is_array($value)) {
-                $value = implode(',', $value);
+            if ($key == 'where' && is_array($value)) {
+                foreach ($value as $where => $value) {
+                    if ( is_array($value) ) {
+                        array_push(
+                            $paramsArray,
+                            $key . '[' . $where . '][operator]' . '=' . $value['operator']
+                        );
+                        array_push(
+                            $paramsArray,
+                            $key . '[' . $where . '][value]' . '=' . $value['value']
+                        );
+
+                    } else {
+                        array_push($paramsArray, $key.'['.$where.']'.'='.$value);
+
+                    }
+                }
+
+            } else {
+                array_push($paramsArray, $key.'='.$value);
 
             }
-            array_push($paramsArray, $key.'='.$value);
 
         }
         $paramsString = implode('&', $paramsArray);
@@ -202,7 +257,7 @@ class Crowdfunding
      *
      * @return void
      */
-    public function setHttpClient($http_client)
+    public function setHttpClient(HttpClient $http_client)
     {
         if (!($http_client instanceof HttpAsyncClient || $http_client instanceof HttpClient)) {
             throw new LogicException(sprintf('Parameter to Crowdfunding::setHttpClient must be instance of "%s" or "%s"', HttpClient::class, HttpAsyncClient::class));
@@ -218,7 +273,7 @@ class Crowdfunding
      *
      * @return void
      */
-    public function setOptions($options)
+    public function setOptions(array $options)
     {
         // Validate platform hostname because its required
         if (!isset($this->options['platform']) && (!isset($options['platform']))) {
@@ -243,7 +298,12 @@ class Crowdfunding
      */
     private function _setupEndpoints()
     {
+        $this->platform = new Platform($this);
+        $this->general = new General($this);
+        $this->layout = new Layout($this);
+        $this->versions = new Version($this);
         $this->campaigns = new Campaign($this);
+        $this->sections = new Section($this);
     }
 
     /**
@@ -271,5 +331,11 @@ class Crowdfunding
     {
         $this->message_factory = $message_factory;
         return $this;
+    }
+
+    public function login($key)
+    {
+        $request = $this->buildRequest('POST', 'login', ['key' => $key], []);
+        return new JWTResponse( $this->http_client->sendRequest($request) );
     }
 }

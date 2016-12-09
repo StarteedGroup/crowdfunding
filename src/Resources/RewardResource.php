@@ -14,8 +14,7 @@ class RewardResource extends ResourceBase
     public function __construct(Reward $reward, array $data)
     {
         $this->campaign = $reward->campaign;
-        $this->resource = json_decode(json_encode($data));
-        parent::__construct($reward->starteed, "{$reward->endpoint}/{$this->id}");
+        parent::__construct($reward->starteed, "{$reward->endpoint}/{$this->id}", $data);
     }
 
     public function donate(array $params)

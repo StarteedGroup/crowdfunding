@@ -59,7 +59,7 @@ class Faq extends ResourceBase
 
         return (object) [
             'data' => $parsed,
-            'pagination' => $pagination
+            'pagination' => json_decode(json_encode($pagination))
         ];
     }
 

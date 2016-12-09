@@ -50,17 +50,11 @@ class Transaction extends ResourceBase
     public function all(array $options =  [])
     {
         $raw_data = parent::get('', $options)->getBody();
-        $data = $raw_data['data'];
         $pagination = $raw_data['meta']['pagination'];
 
-        $parsed = [];
-        foreach ($data as $item) {
-            array_push($parsed, new TransactionResource($this, $item));
-        }
-
         return (object) [
-            'data' => $parsed,
-            'pagination' => $pagination
+            'data' => $this->parseCollection( $raw_data['data'] ),
+            'pagination' => json_decode(json_encode($pagination))
         ];
     }
 
@@ -77,5 +71,46 @@ class Transaction extends ResourceBase
         $response = parent::get($id, $options);
         $body = $response->getBody();
         return new TransactionResource($this, $body['data']);
+    }
+
+    /**
+     * Search transactions by values
+     *
+     * @param array $payload Request payload
+     *
+     * @return TransactionResource Transaction resource to access related data
+     */
+    public function search(array $payload)
+    {
+        $raw_data = parent::get('search', $payload)->getBody();
+        $pagination = $raw_data['meta']['pagination'];
+
+        return (object) [
+            'data' => $this->parseCollection( $raw_data['data'] ),
+            'pagination' => json_decode(json_encode($pagination))
+        ];
+    }
+
+    protected function parseCollection(array $data): array
+    {
+        $parsed = [];
+        foreach ($data as $item) {
+            array_push($parsed, new TransactionResource($this, $item));
+        }
+        return $parsed;
+    }
+
+    /**
+     * Retrieve all completed transactions
+     */
+    public function completed(int $page = 1)
+    {
+        return $this->search([
+            'where' => [
+                'IDEXT_ProjectStatusPayment' => 2
+            ],
+            'limit' => 24,
+            'page' => $page
+        ]);
     }
 }

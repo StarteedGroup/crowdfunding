@@ -9,7 +9,6 @@ class SupporterResource extends ResourceBase
 {
     public function __construct(Supporter $supporter, array $data)
     {
-        $this->resource = json_decode(json_encode($data));
-        parent::__construct($supporter->starteed, "{$supporter->endpoint}/{$this->id}");
+        parent::__construct($supporter->starteed, $supporter->endpoint . '/' . $data['id'], $data);
     }
 }

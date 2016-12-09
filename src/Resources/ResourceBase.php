@@ -21,52 +21,22 @@ class ResourceBase
     protected $endpoint;
 
     /**
-     * The resource data given by the API request.
+     * The original data given by the API request.
      */
-    protected $resource;
+    protected $original;
 
     /**
      * Sets up the Resource.
      *
-     * @param Crowdfunding $starteed - the Starteed Crowdfunding instance that this resource is attached to
-     * @param string       $endpoint - the endpoint that this resource wraps
+     * @param Crowdfunding $starteed The Starteed Crowdfunding instance that this resource is attached to
+     * @param string       $endpoint The endpoint that this resource wraps
+     * @param array        $original The data obtained by the request
      */
-    public function __construct(Crowdfunding $starteed, $endpoint)
+    public function __construct(Crowdfunding $starteed, $endpoint, array $original = null)
     {
         $this->starteed = $starteed;
         $this->endpoint = $endpoint;
-    }
-    /**
-     * Magic method __call is optimized to return value from template engine like Twig.
-     *
-     * @param string $method the method to invoke
-     * @param array  $args   the parameters to pass to function
-     *
-     * @return mixed Return property or function return
-     */
-    public function __call($method, $args)
-    {
-        if (
-            is_array($args) and count($args) == 0
-            && !method_exists($this, $method)
-        ) {
-            return $this->__get($method);
-
-        }
-    }
-    /**
-     * Basic getter lookin in protected property $resource 
-     *
-     * @param string $property the property to look for
-     *
-     * @return mixed|null the resource property or null if not found
-     */
-    public function __get($property)
-    {
-        if (property_exists($this->resource, $property)) {
-          return $this->resource->$property;
-
-        }
+        $this->original = $this->setOriginal($original);
     }
 
     /**
@@ -94,7 +64,7 @@ class ResourceBase
      *
      * @see Starteed->request()
      */
-    public function post($payload = [], $headers = [])
+    public function post(array $payload = [], array $headers = [])
     {
         return $this->request('POST', '', $payload, $headers);
     }
@@ -127,5 +97,46 @@ class ResourceBase
         $uri = $this->endpoint.'/'.$uri;
 
         return $this->starteed->request($method, $uri, $payload, $headers);
+    }
+
+    /**
+     * Declare all properties from request response in order to make them available
+     * as public property.
+     *
+     * @param array $original The array obtained via request
+     *
+     * @return array The response data
+     */
+    public function setOriginal(array $original = null)
+    {
+        if ($original) {
+            $original = json_decode(json_encode($original));
+            foreach ($original as $key => $value) {
+                $this->$key = $value;
+
+            }
+            return $original;
+
+        }
+    }
+
+    public function getOriginal()
+    {
+        return $this->original;
+    }
+
+    public static function unserialize(Crowdfunding $starteed, $data)
+    {
+        return new static($starteed, json_decode(json_encode($data), true));
+    }
+
+    /**
+     * Getter method to access protected related resources
+     *
+     * @return mixed Property value if exists or null if not found
+     */
+    public function __get($property)
+    {
+        return property_exists($this, $property) ? $this->{$property} : null;
     }
 }

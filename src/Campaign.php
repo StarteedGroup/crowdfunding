@@ -48,17 +48,12 @@ class Campaign extends ResourceBase
     public function all(array $options =  [])
     {
         $raw_data = parent::get('', $options)->getBody();
-        $data = $raw_data['data'];
+
         $pagination = $raw_data['meta']['pagination'];
 
-        $parsed = [];
-        foreach ($data as $item) {
-            array_push($parsed, new CampaignResource($this->starteed, $item));
-        }
-
         return (object) [
-            'data' => $parsed,
-            'pagination' => $pagination
+            'data' => $this->parseCollection( $raw_data['data'] ),
+            'pagination' => json_decode(json_encode($pagination))
         ];
     }
 
@@ -70,10 +65,37 @@ class Campaign extends ResourceBase
      *
      * @return CampaignResource Campaign resource to access related data
      */
-    public function retrieve(int $id, array $options = [])
+    public function retrieve(int $id, array $options = []): CampaignResource
     {
         $response = parent::get($id, $options);
         $body = $response->getBody();
         return new CampaignResource($this->starteed, $body['data']);
+    }
+
+    /**
+     * Search campaigns by values
+     *
+     * @param array $payload Request payload
+     *
+     * @return CampaignResource Campaign resource to access related data
+     */
+    public function search(array $payload)
+    {
+        $raw_data = parent::get('search', $payload)->getBody();
+        $pagination = $raw_data['meta']['pagination'];
+
+        return (object) [
+            'data' => $this->parseCollection( $raw_data['data'] ),
+            'pagination' => json_decode(json_encode($pagination))
+        ];
+    }
+
+    protected function parseCollection(array $data): array
+    {
+        $parsed = [];
+        foreach ($data as $item) {
+            array_push($parsed, new CampaignResource($this->starteed, $item));
+        }
+        return $parsed;
     }
 }

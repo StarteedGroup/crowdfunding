@@ -9,7 +9,11 @@ class TransactionResource extends ResourceBase
 {
     public function __construct(Transaction $transaction, array $data)
     {
-        $this->resource = json_decode(json_encode($data));
-        parent::__construct($transaction->starteed, "{$transaction->endpoint}/{$this->id}");
+        parent::__construct($transaction->starteed, $transaction->endpoint . '/' . $data['id'], $data);
+    }
+
+    public function share(array $emails)
+    {
+        return parent::request('POST', 'share', ['emails' => $emails], [])->getBody();
     }
 }
