@@ -33,7 +33,7 @@ class Crowdfunding
      *
      * @var string
      */
-    protected $version = '1.0';
+    protected $version = '0.1';
 
     /**
      * HTTP client used to make requests
@@ -62,7 +62,7 @@ class Crowdfunding
      * @var array
      */
     protected static $default_options = [
-        'host' => 'api.starteed.com',
+        'host' => 'api.selfcrowd.com',
         'protocol' => 'https',
         'port' => 443,
         'key' => '',
