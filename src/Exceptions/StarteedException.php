@@ -3,14 +3,16 @@
 namespace Starteed\Exceptions;
 
 use Exception;
-use Http\Client\Exception\HttpException as HttpException;
+use Http\Client\Exception\HttpException;
 
 class StarteedException extends Exception
 {
     /**
      * Variable to hold json decoded body from http response.
+     *
+     * @var array Body from the response
      */
-    private $body = null;
+    protected $body = null;
 
     /**
      * Sets up the custom exception and copies over original exception values.
