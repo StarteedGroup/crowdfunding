@@ -27,7 +27,7 @@ use Starteed\Exceptions\StarteedException;
  * @link     https://starteed.com
  */
 class Crowdfunding
-{
+{   
     /**
      * Library version, used for setting User-Agent
      *
@@ -286,7 +286,7 @@ class Crowdfunding
             if (key_exists($option, $this->options)) {
                 $this->options[$option] = $value;
 
-            }
+            } 
 
         }
     }
