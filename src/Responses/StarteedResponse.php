@@ -15,7 +15,7 @@ class StarteedResponse implements ResponseInterface
      *
      * @var ResponseInterface
      */
-    private $_response;
+    protected $response;
 
     /**
      * Event dispatcher for Response
@@ -31,9 +31,9 @@ class StarteedResponse implements ResponseInterface
      */
     public function __construct(ResponseInterface $response)
     {
-        $this->_response = $response;
+        $this->response = $response;
         // create the ResponseEvent and dispatching it
-        $event = new ResponseEvent($this->_response);
+        $event = new ResponseEvent($this->response);
         Crowdfunding::dispatch(ResponseEvent::NAME, $event);
     }
 
@@ -44,7 +44,7 @@ class StarteedResponse implements ResponseInterface
      */
     public function getBody()
     {
-        $body = $this->_response->getBody();
+        $body = $this->response->getBody();
         $body_string = $body->__toString();
         $json = json_decode($body_string, true);
         return $json;
@@ -55,66 +55,66 @@ class StarteedResponse implements ResponseInterface
      */
     public function getProtocolVersion()
     {
-        return $this->_response->getProtocolVersion();
+        return $this->response->getProtocolVersion();
     }
 
     public function withProtocolVersion($version)
     {
-        return $this->_response->withProtocolVersion($version);
+        return $this->response->withProtocolVersion($version);
     }
 
     public function getHeaders()
     {
-        return $this->_response->getHeaders();
+        return $this->response->getHeaders();
     }
 
     public function hasHeader($name)
     {
-        return $this->_response->hasHeader($name);
+        return $this->response->hasHeader($name);
     }
 
     public function getHeader($name)
     {
-        return $this->_response->getHeader($name);
+        return $this->response->getHeader($name);
     }
 
     public function getHeaderLine($name)
     {
-        return $this->_response->getHeaderLine($name);
+        return $this->response->getHeaderLine($name);
     }
 
     public function withHeader($name, $value)
     {
-        return $this->_response->withHeader($name, $value);
+        return $this->response->withHeader($name, $value);
     }
 
     public function withAddedHeader($name, $value)
     {
-        return $this->_response->withAddedHeader($name, $value);
+        return $this->response->withAddedHeader($name, $value);
     }
 
     public function withoutHeader($name)
     {
-        return $this->_response->withoutHeader($name);
+        return $this->response->withoutHeader($name);
     }
 
     public function withBody(StreamInterface $body)
     {
-        return $this->_response->withBody($body);
+        return $this->response->withBody($body);
     }
 
     public function getStatusCode()
     {
-        return $this->_response->getStatusCode();
+        return $this->response->getStatusCode();
     }
 
     public function withStatus($code, $reasonPhrase = '')
     {
-        return $this->_response->withStatus($code, $reasonPhrase);
+        return $this->response->withStatus($code, $reasonPhrase);
     }
 
     public function getReasonPhrase()
     {
-        return $this->_response->getReasonPhrase();
+        return $this->response->getReasonPhrase();
     }
 }
