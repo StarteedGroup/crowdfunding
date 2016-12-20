@@ -79,7 +79,7 @@ class Crowdfunding
     ];
 
     /**
-     * Instance of Campaign class
+     * Instance of Platform class
      *
      * @var Platform
      */
@@ -141,7 +141,7 @@ class Crowdfunding
      * @param array  $payload Either used as the request body or URL query params
      * @param array  $headers Additional headers to send along with request
      *
-     * @return CrowdfundingResponse Response due to sync request
+     * @return StarteedResponse Response due to sync request
      */
     public function request($method = 'GET', $uri = '', $payload = [], $headers = [])
     {
