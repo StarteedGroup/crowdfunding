@@ -2,8 +2,11 @@
 
 namespace Starteed\Responses;
 
-use Psr\Http\Message\StreamInterface as StreamInterface;
-use Psr\Http\Message\ResponseInterface as ResponseInterface;
+use Starteed\Crowdfunding;
+use Starteed\Events\ResponseEvent;
+use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\ResponseInterface;
+
 
 class StarteedResponse implements ResponseInterface
 {
@@ -15,6 +18,13 @@ class StarteedResponse implements ResponseInterface
     private $_response;
 
     /**
+     * Event dispatcher for Response
+     *
+     * @var EventDispatcher
+     */
+    protected $dispatcher;
+
+    /**
      * Set up the response to be wrapped
      *
      * @param ResponseInterface $response
@@ -22,6 +32,9 @@ class StarteedResponse implements ResponseInterface
     public function __construct(ResponseInterface $response)
     {
         $this->_response = $response;
+        // create the ResponseEvent and dispatching it
+        $event = new ResponseEvent($this->_response);
+        Crowdfunding::dispatch(ResponseEvent::NAME, $event);
     }
 
     /**

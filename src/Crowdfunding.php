@@ -10,8 +10,9 @@ use Http\Message\RequestFactory;
 use Starteed\Responses\JWTResponse;
 use Psr\Http\Message\RequestInterface;
 use Starteed\Responses\StarteedResponse;
-use Http\Discovery\MessageFactoryDiscovery;
 use Starteed\Exceptions\StarteedException;
+use Http\Discovery\MessageFactoryDiscovery;
+use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Starteed Crowdfunding
@@ -121,6 +122,13 @@ class Crowdfunding
     public $campaigns;
 
     /**
+     * The event dispatcher of Starteed Crowdfunding
+     *
+     * @var EventDispatcher
+     */
+    public static $dispatcher;
+
+    /**
      * Sets up the Crowdfunding instance.
      *
      * @param HttpClient $http_client - An httplug client or adapter
@@ -130,7 +138,32 @@ class Crowdfunding
     {
         $this->setOptions($options);
         $this->setHttpClient($http_client);
-        $this->_setupEndpoints();
+        $this->setupEndpoints();
+    }
+
+    /**
+     * Wrapper for Symfony EventDispatcher
+     *
+     * @param string $name  The event name
+     * @param Event  $event Interface of Event
+     */
+    public static function dispatch($name, Event $event)
+    {
+        return static::getDispatcher()->dispatch($name, $event);
+    }
+
+    /**
+     * Getter for Singleton for Event Dispatcher
+     *
+     * @return EventDispatcher
+     */
+    public static function getDispatcher()
+    {
+        if (!static::$dispatcher) {
+            static::$dispatcher = new \Symfony\Component\EventDispatcher\EventDispatcher();
+
+        }
+        return static::$dispatcher;
     }
 
     /**
