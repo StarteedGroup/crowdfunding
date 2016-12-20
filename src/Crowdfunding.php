@@ -50,6 +50,13 @@ class Crowdfunding
     protected $message_factory;
 
     /**
+     * JWT token used as authentication bearer
+     *
+     * @var string
+     */
+    protected static $token;
+
+    /**
      * Options for requests
      *
      * @var array
@@ -67,7 +74,6 @@ class Crowdfunding
         'port' => 443,
         'key' => '',
         'version' => 'v1',
-        'platform' => null,
         'language' => 'it_IT',
         'authorization' => null
     ];
@@ -194,12 +200,10 @@ class Crowdfunding
             'Accept' => 'application/x.crowdfunding.v1+json',
             'User-Agent' => 'php-starteed-crowdfunding/'.$this->version,
             'Content-Type' => 'application/json',
-            'X-Relay-Host' => $this->options['platform'],
-            'Accept-Language' => $this->options['language'],
-            'Authorization' => null
+            'Accept-Language' => $this->options['language']
         ];
-        if (array_key_exists('authorization', $this->options) && $this->options['authorization']) {
-            $constantHeaders['Authorization'] = 'Bearer ' . $this->options['authorization'];
+        if (static::getAuthToken()) {
+            $constantHeaders['Authorization'] = 'Bearer ' . static::getAuthToken();
 
         }
         foreach ($constantHeaders as $key => $value) {
@@ -275,11 +279,6 @@ class Crowdfunding
      */
     public function setOptions(array $options)
     {
-        // Validate platform hostname because its required
-        if (!isset($this->options['platform']) && (!isset($options['platform']))) {
-            throw new Exception('You must provide a platform host string');
-
-        }
         $this->options = isset($this->options) ? $this->options : self::$default_options;
         // set options, overriding defaults
         foreach ($options as $option => $value) {
@@ -336,6 +335,21 @@ class Crowdfunding
     public function login($key)
     {
         $request = $this->buildRequest('POST', 'login', ['key' => $key], []);
-        return new JWTResponse( $this->http_client->sendRequest($request) );
+        $response = new JWTResponse( $this->http_client->sendRequest($request) );
+        static::setAuthToken( $response->getBody()['token'] );
+        return $response;
+    }
+
+    public static function getAuthToken()
+    {
+        if (static::$token) {
+            return static::$token;
+
+        }
+    }
+
+    public static function setAuthToken($jwt)
+    {
+        static::$token = $jwt;
     }
 }
