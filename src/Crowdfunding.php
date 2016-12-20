@@ -184,7 +184,7 @@ class Crowdfunding
             '\f' => '',
         ];
         $body = strtr(json_encode($body), $jsonReplace);
-        return $this->_getMessageFactory()->createRequest($method, $url, $headers, $body);
+        return $this->getMessageFactory()->createRequest($method, $url, $headers, $body);
     }
 
     /**
@@ -295,7 +295,7 @@ class Crowdfunding
      *
      * @return void
      */
-    private function _setupEndpoints()
+    protected function setupEndpoints()
     {
         $this->platform = new Platform($this);
         $this->general = new General($this);
@@ -310,7 +310,7 @@ class Crowdfunding
      *
      * @return RequestFactory
      */
-    private function _getMessageFactory()
+    protected function getMessageFactory()
     {
         if (!$this->message_factory) {
             $this->message_factory = MessageFactoryDiscovery::find();
