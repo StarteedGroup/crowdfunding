@@ -194,25 +194,19 @@ class Crowdfunding
         } catch (Exception $e) {
             $exception = new StarteedException($e);
             if ($exception->getMessage() == 'The token has been blacklisted') {
-                $renewed = static::dispatch(BlacklistedEvent::NAME, new BlacklistedEvent($this, $request));
+                static::dispatch(BlacklistedEvent::NAME, new BlacklistedEvent($this, $request));
 
             } else {
                 throw $exception;
-                
             }
 
         }
-        if (isset($renewed) && is_a($renewed, Exception::class)) {
-            throw new StarteedException($renewed);
+        try {
+            $request = $this->buildRequest($method, $uri, $payload, $headers);
+            return new StarteedResponse($this->http_client->sendRequest($request));
 
-        } else {
-            try {
-                return new StarteedResponse($this->http_client->sendRequest($request));
-                
-            } catch (Exception $e) {
-                throw new StarteedException($e);
-                
-            }
+        } catch (Exception $e) {
+            throw new StarteedException($e);
 
         }
     }
