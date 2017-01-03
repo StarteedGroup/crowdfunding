@@ -8,6 +8,7 @@ use Http\Client\HttpClient;
 use Http\Client\HttpAsyncClient;
 use Http\Message\RequestFactory;
 use Starteed\Responses\JWTResponse;
+use Starteed\Events\BlacklistedEvent;
 use Psr\Http\Message\RequestInterface;
 use Starteed\Responses\StarteedResponse;
 use Starteed\Exceptions\StarteedException;
@@ -169,6 +170,11 @@ class Crowdfunding
 
     /**
      * Sends sync request.
+     * The first try/catch block detect if the exception is a Token blacklisting: in this case
+     * the event BlacklistedEvent id dispatched in order to provide a convenient way to refresh
+     * the token with a brand new and repeat the original request.
+     * The last try/catch block returns the StarteedResponse or throws any kind of exception
+     * to avoid a infinite loop.
      *
      * @param string $method  The request method (GET|POST|PUT|PATCH|DELETE)
      * @param string $uri     The URI of endpoint
@@ -176,6 +182,8 @@ class Crowdfunding
      * @param array  $headers Additional headers to send along with request
      *
      * @return StarteedResponse Response due to sync request
+     *
+     * @throws StarteedException Exception if token has been blacklisted or something goes wrong
      */
     public function request($method = 'GET', $uri = '', $payload = [], $headers = [])
     {
@@ -183,8 +191,28 @@ class Crowdfunding
         try {
             return new StarteedResponse($this->http_client->sendRequest($request));
 
-        } catch (Exception $exception) {
-            throw new StarteedException($exception);
+        } catch (Exception $e) {
+            $exception = new StarteedException($e);
+            if ($exception->getMessage() == 'The token has been blacklisted') {
+                $renewed = static::dispatch(BlacklistedEvent::NAME, new BlacklistedEvent($this, $request));
+
+            } else {
+                throw $exception;
+                
+            }
+
+        }
+        if (isset($renewed) && is_a($renewed, Exception::class)) {
+            throw new StarteedException($renewed);
+
+        } else {
+            try {
+                return new StarteedResponse($this->http_client->sendRequest($request));
+                
+            } catch (Exception $e) {
+                throw new StarteedException($e);
+                
+            }
 
         }
     }
@@ -365,6 +393,13 @@ class Crowdfunding
         return $this;
     }
 
+    /**
+     * Execute login via a provided key to obtain the JWT.
+     *
+     * @param string $key API key
+     *
+     * @return JWTResponse Response wrapper for the JSON Web Token
+     */
     public function login($key)
     {
         $request = $this->buildRequest('POST', 'login', ['key' => $key], []);
@@ -373,6 +408,11 @@ class Crowdfunding
         return $response;
     }
 
+    /**
+     * Token getter
+     *
+     * @return string|null The JSON Web Token
+     */
     public static function getAuthToken()
     {
         if (static::$token) {
@@ -381,6 +421,11 @@ class Crowdfunding
         }
     }
 
+    /**
+     * Token setter
+     *
+     * @param string $jwt The JSON Web Token obtained via login or refresh
+     */
     public static function setAuthToken($jwt)
     {
         static::$token = $jwt;
