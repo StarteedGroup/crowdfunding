@@ -231,7 +231,6 @@ class Crowdfunding
     public function getHttpHeaders($headers = [])
     {
         $constantHeaders = [
-            'Accept' => 'application/x.crowdfunding.v1+json',
             'User-Agent' => 'php-starteed-crowdfunding/'.$this->version,
             'Content-Type' => 'application/json',
             'Accept-Language' => $this->options['language']
