@@ -13,6 +13,7 @@ use Starteed\Responses\StarteedResponse;
 use Starteed\Exceptions\StarteedException;
 use Http\Discovery\MessageFactoryDiscovery;
 use Symfony\Component\EventDispatcher\Event;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
  * Starteed Crowdfunding
@@ -160,7 +161,7 @@ class Crowdfunding
     public static function getDispatcher()
     {
         if (!static::$dispatcher) {
-            static::$dispatcher = new \Symfony\Component\EventDispatcher\EventDispatcher();
+            static::$dispatcher = new EventDispatcher();
 
         }
         return static::$dispatcher;
