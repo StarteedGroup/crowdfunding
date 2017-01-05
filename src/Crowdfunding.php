@@ -78,7 +78,8 @@ class Crowdfunding
         'key' => '',
         'version' => 'v1',
         'language' => 'it_IT',
-        'authorization' => null
+        'authorization' => null,
+        'platform' => null
     ];
 
     /**
@@ -255,7 +256,8 @@ class Crowdfunding
         $constantHeaders = [
             'User-Agent' => 'php-starteed-crowdfunding/'.$this->version,
             'Content-Type' => 'application/json',
-            'Accept-Language' => $this->options['language']
+            'Accept-Language' => $this->options['language'],
+            'X-Platform' => $this->options['platform'],
         ];
         if (static::getAuthToken()) {
             $constantHeaders['Authorization'] = 'Bearer ' . static::getAuthToken();
