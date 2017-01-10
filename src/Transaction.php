@@ -91,7 +91,7 @@ class Transaction extends ResourceBase
         ];
     }
 
-    protected function parseCollection(array $data): array
+    protected function parseCollection(array $data)
     {
         $parsed = [];
         foreach ($data as $item) {

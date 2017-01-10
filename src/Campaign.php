@@ -65,7 +65,7 @@ class Campaign extends ResourceBase
      *
      * @return CampaignResource Campaign resource to access related data
      */
-    public function retrieve(int $id, array $options = []): CampaignResource
+    public function retrieve(int $id, array $options = [])
     {
         $response = parent::get($id, $options);
         $body = $response->getBody();
@@ -90,7 +90,7 @@ class Campaign extends ResourceBase
         ];
     }
 
-    protected function parseCollection(array $data): array
+    protected function parseCollection(array $data)
     {
         $parsed = [];
         foreach ($data as $item) {

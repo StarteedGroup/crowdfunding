@@ -47,7 +47,7 @@ class Notification extends ResourceBase
      *
      * @return NotificationResource Notification resource
      */
-    public function retrieve(array $options = []): NotificationResource
+    public function retrieve(array $options = [])
     {
         $response = parent::get('', $options);
         $body = $response->getBody();
