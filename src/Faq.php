@@ -7,7 +7,7 @@ use Starteed\Resources\ResourceBase;
 use Starteed\Resources\CampaignResource;
 
 /**
- * Starteed Crowdfunding Reward
+ * Starteed Crowdfunding FAQ
  *
  * Class that handles FAQs related to a campaign
  *
@@ -49,24 +49,33 @@ class Faq extends ResourceBase
     public function all(array $options =  [])
     {
         $raw_data = parent::get('', $options)->getBody();
-        $data = $raw_data['data'];
-        $pagination = $raw_data['meta']['pagination'];
+        if (
+            array_key_exists('limit', $options)
+            && is_numeric($options['limit'])
+        ) {
+            $pagination = $raw_data['meta']['pagination'];
 
-        $parsed = [];
-        foreach ($data as $item) {
-            array_push($parsed, new FaqResource($this, $item));
         }
-
-        return (object) [
-            'data' => $parsed,
-            'pagination' => json_decode(json_encode($pagination))
+        $output = [
+            'data' => $raw_data['data']
         ];
+        if (isset($pagination)) {
+            $output['pagination'] = $pagination;
+
+        }
+        $parsed = [];
+        foreach ($raw_data['data'] as $item) {
+            array_push($parsed, new FaqResource($this, $item));
+
+        }
+        $output['data'] = $parsed;
+        return (object) $output;
     }
 
     /**
      * Retrieve single FAQ looking up for ID
      *
-     * @param int   $id      Supporter ID
+     * @param int   $id      Donator ID
      * @param array $options Additional payload to send along the ID
      *
      * @return FaqResource Single FAQ resource

@@ -7,7 +7,7 @@ use Starteed\Resources\CampaignResource;
 use Starteed\Resources\NotificationResource;
 
 /**
- * Starteed Crowdfunding Notification
+ * Starteed Crowdfunding Notification configuration
  *
  * Class that handles notification settings related to a campaign
  *

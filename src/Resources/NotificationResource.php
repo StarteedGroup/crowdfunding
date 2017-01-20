@@ -4,7 +4,7 @@ namespace Starteed\Resources;
 
 use Starteed\Notification;
 use Starteed\Resources\ResourceBase;
-use Starteed\Resources\TransactionResource;
+use Starteed\Resources\DonationResource;
 
 class NotificationResource extends ResourceBase
 {

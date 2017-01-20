@@ -4,6 +4,7 @@ namespace Starteed\Resources;
 
 use Starteed\Update;
 use Starteed\Resources\ResourceBase;
+use Starteed\Resources\UpdateTranslationResource;
 
 class UpdateResource extends ResourceBase
 {
@@ -13,5 +14,11 @@ class UpdateResource extends ResourceBase
     {
         $this->campaign = $update->campaign;
         parent::__construct($update->starteed, "{$update->endpoint}/{$this->id}", $data);
+        $this->setupEndpoints();
+    }
+
+    protected function setupEndpoints()
+    {
+        $this->translation = new UpdateTranslationResource($this, (array) $this->translation->data);
     }
 }

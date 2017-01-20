@@ -5,22 +5,23 @@ namespace Starteed\Resources;
 use Starteed\Faq;
 use Starteed\Reward;
 use Starteed\Update;
+use Starteed\Donator;
 use Starteed\Donation;
-use Starteed\Supporter;
-use Starteed\Transaction;
 use Starteed\FreeDonation;
 use Starteed\Notification;
 use Starteed\Crowdfunding;
 use Starteed\Resources\ResourceBase;
-use Starteed\Resources\TransactionResource;
+use Starteed\Resources\FundingResource;
+use Starteed\Resources\CurrencyResource;
+use Starteed\Resources\DonationResource;
 
 class CampaignResource extends ResourceBase
 {
     protected $faqs;
     protected $freeDonation;
     protected $rewards;
-    protected $supporters;
-    protected $transactions;
+    protected $donators;
+    protected $donations;
 
     public function __construct(Crowdfunding $starteed, array $data)
     {
@@ -28,15 +29,18 @@ class CampaignResource extends ResourceBase
         $this->setupEndpoints();
     }
 
-    private function setupEndpoints()
+    protected function setupEndpoints()
     {
         $this->faqs = new Faq($this);
+        $this->translation = new CampaignTranslationResource($this, (array) $this->translation->data);
         $this->freeDonation = new FreeDonation($this);
         $this->rewards = new Reward($this);
-        $this->supporters = new Supporter($this);
-        $this->transactions = new Transaction($this);
+        $this->donators = new Donator($this);
+        $this->donations = new Donation($this);
         $this->notification = new Notification($this);
         $this->updates = new Update($this);
+        $this->funding = new FundingResource($this, (array) $this->funding->data);
+        $this->currency = new CurrencyResource($this, (array) $this->currency->data);
     }
 
     public function donate(array $params)
@@ -45,7 +49,7 @@ class CampaignResource extends ResourceBase
         $params['campaign_id'] = $this->id;
         $response = $donation->post($params);
         $body = $response->getBody();
-        return new TransactionResource(new Transaction($this), $body['data']);
+        return new DonationResource(new Donation($this), $body['data']);
     }
 
     public function wizard()

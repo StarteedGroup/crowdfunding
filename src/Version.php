@@ -6,7 +6,7 @@ use Starteed\Resources\ResourceBase;
 use Starteed\Resources\VersionResource;
 
 /**
- * Starteed Version Resource
+ * Starteed Crowdfunding Version
  *
  * Resource class to access single or paginated versions enabled to platform
  *

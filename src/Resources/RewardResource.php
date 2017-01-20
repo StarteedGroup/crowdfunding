@@ -5,7 +5,8 @@ namespace Starteed\Resources;
 use Starteed\Reward;
 use Starteed\Donation;
 use Starteed\Resources\ResourceBase;
-use Starteed\Resources\TransactionResource;
+use Starteed\Resources\DonationResource;
+use Starteed\Resources\RewardTranslationResource;
 
 class RewardResource extends ResourceBase
 {
@@ -15,6 +16,12 @@ class RewardResource extends ResourceBase
     {
         $this->campaign = $reward->campaign;
         parent::__construct($reward->starteed, "{$reward->endpoint}/{$this->id}", $data);
+        $this->setupEndpoints();
+    }
+
+    protected function setupEndpoints()
+    {
+        $this->translation = new RewardTranslationResource($this, (array) $this->translation->data);
     }
 
     public function donate(array $params)
@@ -24,6 +31,6 @@ class RewardResource extends ResourceBase
         $response = $donation->post($params);
         $body = $response->getBody();
 
-        return new TransactionResource(new Transaction($this), $body['data']);
+        return new DonationResource(new Donation($this), $body['data']);
     }
 }

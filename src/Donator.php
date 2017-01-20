@@ -3,13 +3,13 @@
 namespace Starteed;
 
 use Starteed\Resources\ResourceBase;
+use Starteed\Resources\DonatorResource;
 use Starteed\Resources\CampaignResource;
-use Starteed\Resources\SupporterResource;
 
 /**
- * Starteed Crowdfunding Reward
+ * Starteed Crowdfunding Donator
  *
- * Class that handles supporters related to a campaign
+ * Class that handles donators related to a campaign
  *
  * PHP version 5.4
  *
@@ -19,7 +19,7 @@ use Starteed\Resources\SupporterResource;
  * @license  http://www.gnu.org/copyleft/gpl.html GNU General Public License
  * @link     https://starteed.com
  */
-class Supporter extends ResourceBase
+class Donator extends ResourceBase
 {
     /**
      * The Starteed Crowdfunding campaign accessor
@@ -29,22 +29,22 @@ class Supporter extends ResourceBase
     public $campaign;
 
     /**
-     * Setup the Supporter instance
+     * Setup the Donator instance
      *
-     * @param CampaignResource $campaign The Starteed Crowdfunding campaign resource that we want to lookup for supporters
+     * @param CampaignResource $campaign The Starteed Crowdfunding campaign resource that we want to lookup for donators
      */
     public function __construct(CampaignResource $campaign)
     {
         $this->campaign = $campaign;
-        parent::__construct($this->campaign->starteed, "campaigns/{$this->campaign->id}/supporters");
+        parent::__construct($this->campaign->starteed, "campaigns/{$this->campaign->id}/donators");
     }
 
     /**
-     * Retrieve all the supporters related to Starteed Crowdfunding campaign
+     * Retrieve all the donators related to Starteed Crowdfunding campaign
      *
      * @param array $options Payload to send in order to include additional properties or change per page pagination
      *
-     * @return obj Supporter resources with paginations
+     * @return obj Donator resources with paginations
      */
     public function all(array $options =  [])
     {
@@ -54,7 +54,7 @@ class Supporter extends ResourceBase
 
         $parsed = [];
         foreach ($data as $item) {
-            array_push($parsed, new SupporterResource($this, $item));
+            array_push($parsed, new DonatorResource($this, $item));
         }
 
         return (object) [
@@ -64,17 +64,17 @@ class Supporter extends ResourceBase
     }
 
     /**
-     * Retrieve single supporter looking up for ID
+     * Retrieve single donator looking up for ID
      *
-     * @param int   $id      Supporter ID
+     * @param int   $id      Donator ID
      * @param array $options Additional payload to send along the ID
      *
-     * @return SupporterResource Single supporter resource
+     * @return DonatorResource Single donator resource
      */
     public function retrieve(int $id, array $options = [])
     {
         $response = parent::get($id, $options);
         $body = $response->getBody();
-        return new SupporterResource($this, $body['data']);
+        return new DonatorResource($this, $body['data']);
     }
 }

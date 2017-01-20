@@ -7,7 +7,7 @@ use Starteed\Resources\CampaignResource;
 use Starteed\Resources\FreeDonationResource;
 
 /**
- * Starteed Crowdfunding Reward
+ * Starteed Crowdfunding free donation
  *
  * Class that handles reward related to campaign free donation
  *

@@ -4,6 +4,7 @@ namespace Starteed\Resources;
 
 use Starteed\Crowdfunding;
 use Starteed\Resources\ResourceBase;
+use Starteed\Resources\SectionTranslationResource;
 
 class SectionResource extends ResourceBase
 {
@@ -13,8 +14,8 @@ class SectionResource extends ResourceBase
         $this->setupEndpoints();
     }
 
-    private function setupEndpoints()
+    protected function setupEndpoints()
     {
-        //
+        $this->translation = new SectionTranslationResource($this, (array) $this->translation->data);
     }
 }

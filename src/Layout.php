@@ -6,7 +6,7 @@ use Starteed\Resources\ResourceBase;
 use Starteed\Resources\LayoutResource;
 
 /**
- * Starteed Layout Resource
+ * Starteed Crowdfunding Layout configuration
  *
  * Resource class to access single or paginated versions enabled to platform
  *

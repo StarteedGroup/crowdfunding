@@ -2,15 +2,15 @@
 
 namespace Starteed;
 
-use Starteed\StarteedResponse;
 use Starteed\Resources\ResourceBase;
 use Starteed\Resources\CampaignResource;
-use Starteed\Resources\TransactionResource;
+use Starteed\Resources\DonationResource;
 
 /**
  * Starteed Crowdfunding Donation
  *
- * Class to handle donation to campaign
+ * Class that handles donations related to a campaign.
+ * JWT token is mandatory due to sensitive datas.
  *
  * PHP version 5.4
  *
@@ -23,47 +23,94 @@ use Starteed\Resources\TransactionResource;
 class Donation extends ResourceBase
 {
     /**
-     * Starteed Crowdfunding campaign selected
+     * The Starteed Crowdfunding campaign accessor
      *
      * @var CampaignResource
      */
-    protected $campaign;
+    public $campaign;
 
     /**
      * Setup the Donation instance
      *
-     * @param CampaignResource $campaign Starteed Crowdfunding campaign that support wants to pledges
+     * @param CampaignResource $campaign The Starteed Crowdfunding campaign resource that we want to lookup for donations
      */
     public function __construct(CampaignResource $campaign)
     {
         $this->campaign = $campaign;
-        parent::__construct($this->campaign->starteed, "campaigns/{$this->campaign->id}/donate");
+        parent::__construct($this->campaign->starteed, "campaigns/{$this->campaign->id}/donations");
     }
 
     /**
-     * Send the POST request with pyaload
+     * Retrieve all the donations related to Starteed Crowdfunding campaign
      *
-     * @param array $payload Donation parameters such as amount, user_id, reward_id and so on
-     * @param array $headers Additional headers to send with the payload
+     * @param array $options Payload to send in order to include additional properties or change per page pagination
      *
-     * @return StarteedResponse Response due to sync request
+     * @return obj Donation resources with paginations
      */
-    public function post(array $payload = [], array $headers = [])
+    public function all(array $options =  [])
     {
-        $parsed_payload = $this->parsePayload($payload);
-        return $this->request('POST', '', $parsed_payload, $headers);
+        $raw_data = parent::get('', $options)->getBody();
+        $pagination = $raw_data['meta']['pagination'];
+
+        return (object) [
+            'data' => $this->parseCollection( $raw_data['data'] ),
+            'pagination' => json_decode(json_encode($pagination))
+        ];
     }
 
     /**
-     * Parse payload data overriding the Starteed Crowdfunding campaign id
+     * Retrieve single donation looking up for ID
      *
-     * @param array $payload The payload that need to be parsed
+     * @param int   $id      Donation ID
+     * @param array $options Additional payload to send along the ID
      *
-     * @return array Parsed payload data
+     * @return DonationResource Single Donation resource
      */
-    public function parsePayload(array $payload = [])
+    public function retrieve(int $id, array $options = [])
     {
-        $payload['IDEXT_Project'] = $this->campaign->id;
-        return $payload;
+        $response = parent::get($id, $options);
+        $body = $response->getBody();
+        return new DonationResource($this, $body['data']);
+    }
+
+    /**
+     * Search donations by values
+     *
+     * @param array $payload Request payload
+     *
+     * @return DonationResource Donation resource to access related data
+     */
+    public function search(array $payload)
+    {
+        $raw_data = parent::get('search', $payload)->getBody();
+        $pagination = $raw_data['meta']['pagination'];
+
+        return (object) [
+            'data' => $this->parseCollection( $raw_data['data'] ),
+            'pagination' => json_decode(json_encode($pagination))
+        ];
+    }
+
+    protected function parseCollection(array $data)
+    {
+        $parsed = [];
+        foreach ($data as $item) {
+            array_push($parsed, new DonationResource($this, $item));
+        }
+        return $parsed;
+    }
+
+    /**
+     * Retrieve all completed donations
+     */
+    public function completed(int $page = 1)
+    {
+        return $this->search([
+            'where' => [
+                'IDEXT_ProjectStatusPayment' => 2
+            ],
+            'limit' => 24,
+            'page' => $page
+        ]);
     }
 }
