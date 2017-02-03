@@ -15,6 +15,6 @@ class VersionResource extends ResourceBase
 
     protected function setupEndpoints()
     {
-    	$this->language = new LanguageResource($this, (array) $this->language->data);
+        $this->language = new LanguageResource($this, (array) $this->language->data);
     }
 }
