@@ -7,7 +7,6 @@ use Starteed\Reward;
 use Starteed\Update;
 use Starteed\Donator;
 use Starteed\Donation;
-use Starteed\FreeDonation;
 use Starteed\Notification;
 use Starteed\Crowdfunding;
 use Starteed\Resources\ResourceBase;
@@ -18,7 +17,6 @@ use Starteed\Resources\DonationResource;
 class CampaignResource extends ResourceBase
 {
     protected $faqs;
-    protected $freeDonation;
     protected $rewards;
     protected $donators;
     protected $donations;
@@ -33,7 +31,6 @@ class CampaignResource extends ResourceBase
     {
         $this->faqs = new Faq($this);
         $this->translation = new CampaignTranslationResource($this, (array) $this->translation->data);
-        $this->freeDonation = new FreeDonation($this);
         $this->rewards = new Reward($this);
         $this->donators = new Donator($this);
         $this->donations = new Donation($this);

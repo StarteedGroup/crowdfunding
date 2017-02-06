@@ -69,6 +69,7 @@ class Reward extends ResourceBase
 
         }
         $output['data'] = $parsed;
+        $output['free_donation'] = new RewardResource($this, $raw_data['meta']['free_donation']);
         return (object) $output;
     }
 

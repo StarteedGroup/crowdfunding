@@ -21,7 +21,10 @@ class RewardResource extends ResourceBase
 
     protected function setupEndpoints()
     {
-        $this->translation = new RewardTranslationResource($this, (array) $this->translation->data);
+        if ($this->translation) {
+            $this->translation = new RewardTranslationResource($this, (array) $this->translation->data);
+
+        }
     }
 
     public function donate(array $params)
