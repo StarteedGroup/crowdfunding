@@ -72,7 +72,7 @@ class Crowdfunding
      * @var array
      */
     protected static $default_options = [
-        'host' => 'api.selfcrowd.com',
+        'host' => 'api.starteed.com',
         'protocol' => 'https',
         'port' => 443,
         'key' => '',
