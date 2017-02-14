@@ -399,7 +399,13 @@ class Crowdfunding
     public function login($key)
     {
         $request = $this->buildRequest('POST', 'login', ['key' => $key], []);
-        $response = new JWTResponse( $this->http_client->sendRequest($request) );
+        try {
+            $response = new JWTResponse( $this->http_client->sendRequest($request) );
+
+        } catch (Exception $e) {
+            throw new StarteedException($e);
+
+        }
         static::setAuthToken( $response->getBody()['token'] );
         return $response;
     }

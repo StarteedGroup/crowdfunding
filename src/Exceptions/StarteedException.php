@@ -22,15 +22,14 @@ class StarteedException extends Exception
     public function __construct(Exception $exception)
     {
         $message = json_decode( $exception->getResponse()->getBody()->__toString() );
-        $code = $exception->getCode();
+        $code = property_exists($message, 'code') ? $message->code : $exception->getCode();
         if ($exception instanceof HttpException) {
-            $code = $message->status_code;
             if (property_exists($message, 'errors')) {
                 $message = $this->body = implode(', ', array_keys( (array) $message->errors) );
 
             } else {
                 $message = $this->body = $message->message;
-                
+
             }
         }
 
