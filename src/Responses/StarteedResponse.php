@@ -2,7 +2,7 @@
 
 namespace Starteed\Responses;
 
-use Starteed\Crowdfunding;
+use Starteed\SelfCrowdfunding;
 use Starteed\Events\ResponseEvent;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -34,7 +34,7 @@ class StarteedResponse implements ResponseInterface
         $this->response = $response;
         // create the ResponseEvent and dispatching it
         $event = new ResponseEvent($this->response);
-        Crowdfunding::dispatch(ResponseEvent::NAME, $event);
+        SelfCrowdfunding::dispatch(ResponseEvent::NAME, $event);
     }
 
     /**

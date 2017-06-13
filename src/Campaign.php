@@ -8,12 +8,12 @@ use Starteed\Resources\CampaignResource;
 /**
  * Starteed Campaign Resource
  *
- * Resource class to access single or paginated Starteed Crowdfunding campaigns
+ * Resource class to access single or paginated Starteed Self campaigns
  *
  * PHP version 5.4
  *
  * @category Class
- * @package  Crowdfunding
+ * @package  Self
  * @author   Dario Tranchitella <dario.tranchitella@starteed.com>
  * @license  http://www.gnu.org/copyleft/gpl.html GNU General Public License
  * @link     https://starteed.com
@@ -21,18 +21,18 @@ use Starteed\Resources\CampaignResource;
 class Campaign extends ResourceBase
 {
     /**
-     * Starteed Crowdfunding instance in order to make requests
+     * Starteed Self instance in order to make requests
      *
-     * @var Crowdfunding
+     * @var SelfCrowdfunding
      */
     protected $starteed;
 
     /**
      * Sets up the Campaign instance.
      *
-     * @param Crowdfunding $starteed - Crowdfunding instance in order to make requests
+     * @param SelfCrowdfunding $starteed - Self instance in order to make requests
      */
-    public function __construct(Crowdfunding $starteed)
+    public function __construct(SelfCrowdfunding $starteed)
     {
         $this->starteed = $starteed;
         parent::__construct($starteed, 'campaigns');

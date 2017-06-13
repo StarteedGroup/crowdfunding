@@ -6,14 +6,14 @@ use Starteed\Resources\ResourceBase;
 use Starteed\Resources\GeneralResource;
 
 /**
- * Starteed Crowdfunding General configuration
+ * Starteed Self General configuration
  *
  * Resource class to access single or paginated versions enabled to platform
  *
  * PHP version 5.4
  *
  * @category Class
- * @package  Crowdfunding
+ * @package  Self
  * @author   Dario Tranchitella <dario.tranchitella@starteed.com>
  * @license  http://www.gnu.org/copyleft/gpl.html GNU General Public License
  * @link     https://starteed.com
@@ -21,18 +21,18 @@ use Starteed\Resources\GeneralResource;
 class General extends ResourceBase
 {
     /**
-     * Starteed Crowdfunding instance in order to make requests
+     * Starteed Self instance in order to make requests
      *
-     * @var Crowdfunding
+     * @var SelfCrowdfunding
      */
     protected $starteed;
 
     /**
      * Sets up the General instance.
      *
-     * @param Crowdfunding $starteed - Crowdfunding instance in order to make requests
+     * @param SelfCrowdfunding $starteed - Self instance in order to make requests
      */
-    public function __construct(Crowdfunding $starteed)
+    public function __construct(SelfCrowdfunding $starteed)
     {
         $this->starteed = $starteed;
         parent::__construct($starteed, 'general');

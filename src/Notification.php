@@ -7,14 +7,14 @@ use Starteed\Resources\CampaignResource;
 use Starteed\Resources\NotificationResource;
 
 /**
- * Starteed Crowdfunding Notification configuration
+ * Starteed Self Notification configuration
  *
  * Class that handles notification settings related to a campaign
  *
  * PHP version 5.4
  *
  * @category Class
- * @package  Crowdfunding
+ * @package  Self
  * @author   Dario Tranchitella <dario.tranchitella@starteed.com>
  * @license  http://www.gnu.org/copyleft/gpl.html GNU General Public License
  * @link     https://starteed.com
@@ -22,7 +22,7 @@ use Starteed\Resources\NotificationResource;
 class Notification extends ResourceBase
 {
     /**
-     * The Starteed Crowdfunding campaign accessor
+     * The Starteed Self campaign accessor
      *
      * @var CampaignResource
      */
@@ -31,7 +31,7 @@ class Notification extends ResourceBase
     /**
      * Setup the Notification instance
      *
-     * @param CampaignResource $campaign The Starteed Crowdfunding campaign resource that we want to lookup for notification settings
+     * @param CampaignResource $campaign The Starteed Self campaign resource that we want to lookup for notification settings
      */
     public function __construct(CampaignResource $campaign)
     {

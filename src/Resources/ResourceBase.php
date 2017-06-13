@@ -2,7 +2,7 @@
 
 namespace Starteed\Resources;
 
-use Starteed\Crowdfunding;
+use Starteed\SelfCrowdfunding;
 
 /**
  * Class ResourceBase
@@ -28,11 +28,11 @@ class ResourceBase
     /**
      * Sets up the Resource.
      *
-     * @param Crowdfunding $starteed The Starteed Crowdfunding instance that this resource is attached to
-     * @param string       $endpoint The endpoint that this resource wraps
-     * @param array        $original The data obtained by the request
+     * @param \Starteed\SelfCrowdfunding $starteed The Starteed Self instance that this resource is attached to
+     * @param string                     $endpoint The endpoint that this resource wraps
+     * @param array                      $original The data obtained by the request
      */
-    public function __construct(Crowdfunding $starteed, $endpoint, array $original = null)
+    public function __construct(SelfCrowdfunding $starteed, $endpoint, array $original = null)
     {
         $this->starteed = $starteed;
         $this->endpoint = $endpoint;
@@ -42,7 +42,11 @@ class ResourceBase
     /**
      * Sends get request to API at the set endpoint.
      *
-     * @see Starteed->request()
+     * @param string $uri
+     * @param array  $payload
+     * @param array  $headers
+     *
+     * @return \Starteed\Responses\StarteedResponse
      */
     public function get($uri = '', $payload = [], $headers = [])
     {
@@ -62,7 +66,10 @@ class ResourceBase
     /**
      * Sends post request to API at the set endpoint.
      *
-     * @see Starteed->request()
+     * @param array $payload
+     * @param array $headers
+     *
+     * @return \Starteed\Responses\StarteedResponse
      */
     public function post(array $payload = [], array $headers = [])
     {
@@ -72,7 +79,11 @@ class ResourceBase
     /**
      * Sends delete request to API at the set endpoint.
      *
-     * @see Starteed->request()
+     * @param string $uri
+     * @param array  $payload
+     * @param array  $headers
+     *
+     * @return \Starteed\Responses\StarteedResponse
      */
     public function delete($uri = '', $payload = [], $headers = [])
     {
@@ -82,9 +93,12 @@ class ResourceBase
     /**
      * Sends requests to Starteed object to the resource endpoint.
      *
-     * @see Starteed->request()
+     * @param string $method
+     * @param string $uri
+     * @param array  $payload
+     * @param array  $headers
      *
-     * @return StarteedResponse
+     * @return \Starteed\Responses\StarteedResponse
      */
     public function request($method = 'GET', $uri = '', $payload = [], $headers = [])
     {
@@ -120,14 +134,12 @@ class ResourceBase
         }
     }
 
+    /**
+     * @return array
+     */
     public function getOriginal()
     {
         return $this->original;
-    }
-
-    public static function unserialize(Crowdfunding $starteed, $data)
-    {
-        return new static($starteed, json_decode(json_encode($data), true));
     }
 
     /**

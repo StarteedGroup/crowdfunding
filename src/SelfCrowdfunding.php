@@ -2,10 +2,8 @@
 
 namespace Starteed;
 
-use Exception;
-use LogicException;
+use Http\Client\Exception\HttpException;
 use Http\Client\HttpClient;
-use Http\Client\HttpAsyncClient;
 use Http\Message\RequestFactory;
 use Starteed\Responses\JWTResponse;
 use Starteed\Events\BlacklistedEvent;
@@ -17,19 +15,19 @@ use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
- * Starteed Crowdfunding
+ * Starteed Self Crowdfunding
  *
  * Class that handles all the requests and the basic endpoints to access data
  *
  * PHP version 5.4
  *
  * @category Class
- * @package  Crowdfunding
+ * @package  Self
  * @author   Dario Tranchitella <dario.tranchitella@starteed.com>
  * @license  http://www.gnu.org/copyleft/gpl.html GNU General Public License
  * @link     https://starteed.com
  */
-class Crowdfunding
+class SelfCrowdfunding
 {   
     /**
      * Library version, used for setting User-Agent
@@ -41,16 +39,16 @@ class Crowdfunding
     /**
      * HTTP client used to make requests
      *
-     * @var HttpClient|HttpAsyncClient
+     * @var \Http\Client\HttpClient
      */
-    protected $http_client;
+    protected $httpClient;
 
     /**
-     * The choosen message factory
+     * The chosen message factory
      *
-     * @var RequestFactory
+     * @var \Http\Message\RequestFactory
      */
-    protected $message_factory;
+    protected $messageFactory;
 
     /**
      * JWT token used as authentication bearer
@@ -71,7 +69,7 @@ class Crowdfunding
      *
      * @var array
      */
-    protected static $default_options = [
+    protected static $defaultOptions = [
         'host' => 'api.starteed.com',
         'protocol' => 'https',
         'port' => 443,
@@ -85,7 +83,7 @@ class Crowdfunding
     /**
      * Instance of Platform class
      *
-     * @var Platform
+     * @var PlatformEndpoint
      */
     public $platform;
 
@@ -125,14 +123,14 @@ class Crowdfunding
     public $campaigns;
 
     /**
-     * The event dispatcher of Starteed Crowdfunding
+     * The event dispatcher of Starteed Self
      *
      * @var EventDispatcher
      */
     public static $dispatcher;
 
     /**
-     * Sets up the Crowdfunding instance.
+     * Sets up the Self instance.
      *
      * @param HttpClient $http_client - An httplug client or adapter
      * @param array      $options     - An array to overide default options
@@ -149,6 +147,8 @@ class Crowdfunding
      *
      * @param string $name  The event name
      * @param Event  $event Interface of Event
+     *
+     * @return \Symfony\Component\EventDispatcher\Event
      */
     public static function dispatch($name, Event $event)
     {
@@ -171,44 +171,38 @@ class Crowdfunding
 
     /**
      * Sends sync request.
-     * The first try/catch block detect if the exception is a Token blacklisting: in this case
-     * the event BlacklistedEvent id dispatched in order to provide a convenient way to refresh
-     * the token with a brand new and repeat the original request.
-     * The last try/catch block returns the StarteedResponse or throws any kind of exception
-     * to avoid a infinite loop.
+     * The first try/catch block detect if the exception is a Token blacklisting: in this case the event
+     * BlacklistedEvent id dispatched in order to provide a convenient way to refresh the token with a brand new and
+     * repeat the original request.
+     * The last try/catch block returns the StarteedResponse or throws any kind of exception to avoid a infinite loop.
      *
      * @param string $method  The request method (GET|POST|PUT|PATCH|DELETE)
      * @param string $uri     The URI of endpoint
      * @param array  $payload Either used as the request body or URL query params
      * @param array  $headers Additional headers to send along with request
      *
-     * @return StarteedResponse Response due to sync request
+     * @return \Starteed\Responses\StarteedResponse Response due to sync request
      *
-     * @throws StarteedException Exception if token has been blacklisted or something goes wrong
+     * @throws \Starteed\Exceptions\StarteedException Exception if token has been blacklisted or something goes wrong
      */
     public function request($method = 'GET', $uri = '', $payload = [], $headers = [])
     {
-        $request = $this->buildRequest($method, $uri, $payload, $headers);
         try {
-            return new StarteedResponse($this->http_client->sendRequest($request));
-
-        } catch (Exception $e) {
-            $exception = new StarteedException($e);
-            if ($exception->getMessage() == 'The token has been blacklisted') {
+            $request = $this->buildRequest($method, $uri, $payload, $headers);
+            return new StarteedResponse($this->httpClient->sendRequest($request));
+        } catch (HttpException $exception) {
+            $exception = new StarteedException($exception);
+            if ($exception->getMessage() === 'The token has been blacklisted') {
                 static::dispatch(BlacklistedEvent::NAME, new BlacklistedEvent($this, $request));
-
             } else {
                 throw $exception;
             }
-
         }
         try {
             $request = $this->buildRequest($method, $uri, $payload, $headers);
-            return new StarteedResponse($this->http_client->sendRequest($request));
-
-        } catch (Exception $e) {
+            return new StarteedResponse($this->httpClient->sendRequest($request));
+        } catch (HttpException $e) {
             throw new StarteedException($e);
-
         }
     }
 
@@ -220,7 +214,7 @@ class Crowdfunding
      * @param array  $payload Either used as the request body or URL query params
      * @param array  $headers Additional headers to send along with request
      *
-     * @return RequestInterface
+     * @return \Psr\Http\Message\RequestInterface
      */
     public function buildRequest($method, $uri, $payload, $headers)
     {
@@ -236,7 +230,9 @@ class Crowdfunding
         }
         $url = $this->getUrl($uri, $params);
         $headers = $this->getHttpHeaders($headers);
-        // Starteed Crowdfunding API will not tolerate form feed in JSON.
+        /*
+         * Starteed Self API will not tolerate form feed in JSON.
+         */
         $jsonReplace = [
             '\f' => '',
         ];
@@ -247,9 +243,9 @@ class Crowdfunding
     /**
      * Returns an array for the request headers.
      *
-     * @param array $headers - any custom headers for the request
+     * @param array $headers Custom headers for the request
      *
-     * @return array $headers - headers for the request
+     * @return array $headers Headers for the Request
      */
     public function getHttpHeaders($headers = [])
     {
@@ -314,21 +310,17 @@ class Crowdfunding
     /**
      * Sets $http_client to be used for request
      *
-     * @param HttpClient|HttpAsyncClient $http_client The client to be used for request
+     * @param \Http\Client\HttpClient $httpClient The client to be used for request
      *
      * @return void
      */
-    public function setHttpClient(HttpClient $http_client)
+    public function setHttpClient(HttpClient $httpClient)
     {
-        if (!($http_client instanceof HttpAsyncClient || $http_client instanceof HttpClient)) {
-            throw new LogicException(sprintf('Parameter to Crowdfunding::setHttpClient must be instance of "%s" or "%s"', HttpClient::class, HttpAsyncClient::class));
-
-        }
-        $this->http_client = $http_client;
+        $this->httpClient = $httpClient;
     }
 
     /**
-     * Sets the options from the param and defaults for the Starteed Crowdfunding object
+     * Sets the options from the param and defaults for the Starteed Self object
      *
      * @param array $options Array of options: platform hostname is mandatory
      *
@@ -336,56 +328,57 @@ class Crowdfunding
      */
     public function setOptions(array $options)
     {
-        $this->options = isset($this->options) ? $this->options : self::$default_options;
+        $this->options = isset($this->options) ? $this->options : static::$defaultOptions;
         // set options, overriding defaults
         foreach ($options as $option => $value) {
             if (key_exists($option, $this->options)) {
                 $this->options[$option] = $value;
-
-            } 
-
+            }
         }
     }
 
     /**
-     * Sets up any endpoints to custom classes e.g. $this->campaigns.
+     * Set up endpoints for tree traversing.
      *
      * @return void
      */
     protected function setupEndpoints()
     {
-        $this->platform = new Platform($this);
-        $this->general = new General($this);
+        $this->platform = new PlatformEndpoint($this);
+        $this->campaigns = new CampaignsEndpoint($this);
+        $this->general = new GeneralEndpoint($this);
+
+
+
         $this->layout = new Layout($this);
         $this->versions = new Version($this);
-        $this->campaigns = new Campaign($this);
         $this->sections = new Section($this);
     }
 
     /**
-     * Return discovere and available Message Factory
+     * Return discovered and available Message Factory
      *
-     * @return RequestFactory
+     * @return \Http\Message\RequestFactory
      */
     protected function getMessageFactory()
     {
-        if (!$this->message_factory) {
-            $this->message_factory = MessageFactoryDiscovery::find();
+        if (!$this->messageFactory) {
+            $this->messageFactory = MessageFactoryDiscovery::find();
 
         }
-        return $this->message_factory;
+        return $this->messageFactory;
     }
 
     /**
      * Enable override of Message Factory
      *
-     * @param RequestFactory $message_factory The choosen message factory
+     * @param \Http\Message\RequestFactory $messageFactory The choosen message factory
      *
-     * @return Crowdfunding
+     * @return \Starteed\SelfCrowdfunding
      */
-    public function setMessageFactory(RequestFactory $message_factory)
+    public function setMessageFactory(RequestFactory $messageFactory)
     {
-        $this->message_factory = $message_factory;
+        $this->messageFactory = $messageFactory;
         return $this;
     }
 
@@ -394,20 +387,20 @@ class Crowdfunding
      *
      * @param string $key API key
      *
-     * @return JWTResponse Response wrapper for the JSON Web Token
+     * @return \Starteed\Responses\JWTResponse Response wrapper for the JSON Web Token
+     *
+     * @throws \Starteed\Exceptions\StarteedException
      */
     public function login($key)
     {
-        $request = $this->buildRequest('POST', 'login', ['key' => $key], []);
         try {
-            $response = new JWTResponse( $this->http_client->sendRequest($request) );
-
-        } catch (Exception $e) {
-            throw new StarteedException($e);
-
+            $request = $this->buildRequest('POST', 'login', ['key' => $key], []);
+            $response = new JWTResponse( $this->httpClient->sendRequest($request) );
+            static::setAuthToken( $response->getBody()['token'] );
+            return $response;
+        } catch (\Exception $exception) {
+            throw new StarteedException($exception);
         }
-        static::setAuthToken( $response->getBody()['token'] );
-        return $response;
     }
 
     /**
@@ -419,7 +412,6 @@ class Crowdfunding
     {
         if (static::$token) {
             return static::$token;
-
         }
     }
 

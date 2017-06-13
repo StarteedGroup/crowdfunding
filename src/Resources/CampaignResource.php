@@ -2,61 +2,130 @@
 
 namespace Starteed\Resources;
 
-use Starteed\Faq;
-use Starteed\Reward;
-use Starteed\Update;
-use Starteed\Donator;
-use Starteed\Donation;
-use Starteed\Notification;
-use Starteed\Crowdfunding;
-use Starteed\Resources\ResourceBase;
-use Starteed\Resources\FundingResource;
-use Starteed\Resources\CurrencyResource;
-use Starteed\Resources\DonationResource;
+use Starteed\BaseResource;
+use Starteed\CampaignsEndpoint;
+use Starteed\SelfCrowdfunding;
+use Starteed\Responses\StarteedResponse;
+use Starteed\Contracts\RequestableInterface;
 
-class CampaignResource extends ResourceBase
+class CampaignResource extends BaseResource implements RequestableInterface
 {
-    protected $faqs;
-    protected $rewards;
-    protected $donators;
-    protected $donations;
+    /**
+     * @var \Starteed\CampaignsEndpoint
+     */
+    protected $campaignsEndpoint;
 
-    public function __construct(Crowdfunding $starteed, array $data)
+    /**
+     * @var array
+     */
+    private $original;
+
+    /**
+     * @var array
+     */
+    private $meta;
+
+    /**
+     * @var array
+     */
+    public $data;
+
+    public function __construct(CampaignsEndpoint $campaignsEndpoint, array $data = [], array $meta)
     {
-        parent::__construct($starteed, 'campaigns/' . $data['id'], $data);
-        $this->setupEndpoints();
+        $this->campaignsEndpoint = $campaignsEndpoint;
+        $this->data = $data;
+        $this->meta = $meta;
+        /*
+         * Original data is private in order to do comparison for PATCH request auto-completion
+         */
+        $this->original = $this->data;
     }
 
-    protected function setupEndpoints()
+    /**
+     * @param string $uri
+     *
+     * @return string
+     */
+    public function getEndpointUri(string $uri): string
     {
-        $this->faqs = new Faq($this);
-        $this->translation = new CampaignTranslationResource($this, (array) $this->translation->data);
-        $this->rewards = new Reward($this);
-        $this->donators = new Donator($this);
-        $this->donations = new Donation($this);
-        $this->notification = new Notification($this);
-        $this->updates = new Update($this);
-        $this->funding = new FundingResource($this, (array) $this->funding->data);
-        $this->currency = new CurrencyResource($this, (array) $this->currency->data);
+        return "{$this->campaignsEndpoint->getEndpointUri($this->original['id'])}/{$uri}";
     }
 
-    public function donate(array $params)
+    /**
+     * @return \Starteed\SelfCrowdfunding
+     */
+    public function getStarteedEndpoint(): SelfCrowdfunding
     {
-        $donation = new Donation($this);
-        $params['campaign_id'] = $this->id;
-        $response = $donation->post($params);
-        $body = $response->getBody();
-        return new DonationResource(new Donation($this), $body['data']);
+        return $this->campaignsEndpoint->getStarteedEndpoint();
     }
 
-    public function wizard()
+    /**
+     * @param \Starteed\SelfCrowdfunding $campaignsEndpoint
+     *
+     * @return mixed
+     */
+    public function setStarteedEndpoint(SelfCrowdfunding $campaignsEndpoint)
     {
-        $campaign = json_decode(json_encode( parent::get(null, ['include' => 'wizard'])->getBody() ));
-        return $campaign->data->wizard->data;
+        $this->campaignsEndpoint = $campaignsEndpoint;
     }
 
-    public function share($platform, $user_id = null)
+    /**
+     * @param string $uri
+     * @param array  $payload
+     * @param array  $headers
+     *
+     * @return \Starteed\Responses\StarteedResponse
+     */
+    public function get(string $uri = '', array $payload = [], array $headers = []): StarteedResponse
     {
-        return parent::request('POST', 'share', ['platform' => $platform, 'user_id' => $user_id], [])->getBody();
+        return $this->campaignsEndpoint->get($this->getEndpointUri($uri), $payload, $headers);
+    }
+
+    /**
+     * @param string $uri
+     * @param array  $payload
+     * @param array  $headers
+     *
+     * @return \Starteed\Responses\StarteedResponse
+     */
+    public function put(string $uri = '', array $payload = [], array $headers = []): StarteedResponse
+    {
+        return $this->campaignsEndpoint->put($this->getEndpointUri($uri), $payload, $headers);
+    }
+
+    /**
+     * @param string $uri
+     * @param array  $payload
+     * @param array  $headers
+     *
+     * @return \Starteed\Responses\StarteedResponse
+     */
+    public function post(string $uri = '', array $payload = [], array $headers = []): StarteedResponse
+    {
+        return $this->campaignsEndpoint->post($this->getEndpointUri($uri), $payload, $headers);
+    }
+
+    /**
+     * @param string $uri
+     * @param array  $payload
+     * @param array  $headers
+     *
+     * @return \Starteed\Responses\StarteedResponse
+     */
+    public function delete(string $uri = '', array $payload = [], array $headers = []): StarteedResponse
+    {
+        return $this->campaignsEndpoint->delete($this->getEndpointUri($uri), $payload, $headers);
+    }
+
+    /**
+     * @param string $uri
+     * @param array  $payload
+     * @param array  $headers
+     *
+     * @return \Starteed\Responses\StarteedResponse
+     */
+    public function patch(string $uri = '', array $payload = [], array $headers = []): StarteedResponse
+    {
+        return $this->campaignsEndpoint->patch($this->getEndpointUri($uri), $payload, $headers);
     }
 }

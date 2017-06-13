@@ -7,7 +7,7 @@ use Starteed\Resources\CampaignResource;
 use Starteed\Resources\DonationResource;
 
 /**
- * Starteed Crowdfunding Donation
+ * Starteed Self Donation
  *
  * Class that handles donations related to a campaign.
  * JWT token is mandatory due to sensitive datas.
@@ -15,7 +15,7 @@ use Starteed\Resources\DonationResource;
  * PHP version 5.4
  *
  * @category Class
- * @package  Crowdfunding
+ * @package  Self
  * @author   Dario Tranchitella <dario.tranchitella@starteed.com>
  * @license  http://www.gnu.org/copyleft/gpl.html GNU General Public License
  * @link     https://starteed.com
@@ -23,7 +23,7 @@ use Starteed\Resources\DonationResource;
 class Donation extends ResourceBase
 {
     /**
-     * The Starteed Crowdfunding campaign accessor
+     * The Starteed Self campaign accessor
      *
      * @var CampaignResource
      */
@@ -32,7 +32,7 @@ class Donation extends ResourceBase
     /**
      * Setup the Donation instance
      *
-     * @param CampaignResource $campaign The Starteed Crowdfunding campaign resource that we want to lookup for donations
+     * @param CampaignResource $campaign The Starteed Self campaign resource that we want to lookup for donations
      */
     public function __construct(CampaignResource $campaign)
     {
@@ -41,7 +41,7 @@ class Donation extends ResourceBase
     }
 
     /**
-     * Retrieve all the donations related to Starteed Crowdfunding campaign
+     * Retrieve all the donations related to Starteed Self campaign
      *
      * @param array $options Payload to send in order to include additional properties or change per page pagination
      *

@@ -2,47 +2,40 @@
 
 namespace Starteed\Exceptions;
 
-use Exception;
 use Http\Client\Exception\HttpException;
 
-class StarteedException extends Exception
+class StarteedException extends \Exception
 {
     /**
-     * Variable to hold json decoded body from http response.
+     * Variable to hold json decoded body from HTTP Response.
      *
-     * @var array Body from the response
+     * @var object Body from the response
      */
-    protected $body = null;
+    protected $body;
+
+    /**
+     * @var string
+     */
+    protected $message;
 
     /**
      * Sets up the custom exception and copies over original exception values.
      *
-     * @param Exception $exception - the exception to be wrapped
+     * @param \Http\Client\Exception\HttpException $exception The exception to be wrapped
      */
-    public function __construct(Exception $exception)
+    public function __construct(HttpException $exception)
     {
-        $message = json_decode( $exception->getResponse()->getBody()->__toString() );
-        $code = property_exists($message, 'code') ? $message->code : $exception->getCode();
-        if ($exception instanceof HttpException) {
-            if (property_exists($message, 'errors')) {
-                $message = $this->body = implode(', ', array_keys( (array) $message->errors) );
+        $this->body = json_decode($exception->getResponse()->getBody()->__toString());
 
-            } else {
-                $message = $this->body = $message->message;
+        $this->message = property_exists($this->body, 'message') ? $this->body->message : null;
+        $this->code = property_exists($this->body, 'code') ? $this->body->code : $exception->getCode();
 
-            }
+        if (property_exists($this->message, 'errors')) {
+            $errors = (array) $this->message->errors;
+            $message = implode(', ', array_keys($errors));
+        } else {
+            $message = $this->body->message;
         }
-
-        parent::__construct($message, $code, $exception->getPrevious());
-    }
-
-    /**
-     * Returns the body.
-     *
-     * @return array $body - the json decoded body from the http response
-     */
-    public function getBody()
-    {
-        return $this->body;
+        parent::__construct($message, $this->code, $exception->getPrevious());
     }
 }

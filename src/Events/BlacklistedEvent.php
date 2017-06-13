@@ -2,7 +2,7 @@
 
 namespace Starteed\Events;
 
-use Starteed\Crowdfunding;
+use Starteed\SelfCrowdfunding;
 use Psr\Http\Message\RequestInterface;
 use Symfony\Component\EventDispatcher\Event;
 
@@ -16,7 +16,7 @@ class BlacklistedEvent extends Event
     protected $starteed;
     protected $request;
 
-    public function __construct(Crowdfunding $starteed, RequestInterface $request)
+    public function __construct(SelfCrowdfunding $starteed, RequestInterface $request)
     {
         $this->starteed = $starteed;
         $this->request = $request;

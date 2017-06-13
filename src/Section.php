@@ -6,14 +6,14 @@ use Starteed\Resources\ResourceBase;
 use Starteed\Resources\SectionResource;
 
 /**
- * Starteed Crowdfunding Section
+ * Starteed Self Section
  *
  * Class that handles sections related to a campaign
  *
  * PHP version 5.4
  *
  * @category Class
- * @package  Crowdfunding
+ * @package  Self
  * @author   Dario Tranchitella <dario.tranchitella@starteed.com>
  * @license  http://www.gnu.org/copyleft/gpl.html GNU General Public License
  * @link     https://starteed.com
@@ -21,25 +21,25 @@ use Starteed\Resources\SectionResource;
 class Section extends ResourceBase
 {
     /**
-     * Starteed Crowdfunding instance in order to make requests
+     * Starteed Self instance in order to make requests
      *
-     * @var Crowdfunding
+     * @var SelfCrowdfunding
      */
     protected $starteed;
 
     /**
      * Sets up the Section instance.
      *
-     * @param Crowdfunding $starteed - Crowdfunding instance in order to make requests
+     * @param SelfCrowdfunding $starteed - Self instance in order to make requests
      */
-    public function __construct(Crowdfunding $starteed)
+    public function __construct(SelfCrowdfunding $starteed)
     {
         $this->starteed = $starteed;
         parent::__construct($starteed, 'sections');
     }
 
     /**
-     * Retrieve all the sections related to Starteed Crowdfunding campaign
+     * Retrieve all the sections related to Starteed Self campaign
      *
      * @param array $options Payload to send in order to include additional properties or change per page pagination
      *

@@ -7,14 +7,14 @@ use Starteed\Resources\RewardResource;
 use Starteed\Resources\CampaignResource;
 
 /**
- * Starteed Crowdfunding Reward
+ * Starteed Self Reward
  *
  * Class that handles rewards related to a campaign
  *
  * PHP version 5.4
  *
  * @category Class
- * @package  Crowdfunding
+ * @package  Self
  * @author   Dario Tranchitella <dario.tranchitella@starteed.com>
  * @license  http://www.gnu.org/copyleft/gpl.html GNU General Public License
  * @link     https://starteed.com
@@ -22,7 +22,7 @@ use Starteed\Resources\CampaignResource;
 class Reward extends ResourceBase
 {
     /**
-     * The Starteed Crowdfunding campaign accessor
+     * The Starteed Self campaign accessor
      *
      * @var CampaignResource
      */
@@ -31,7 +31,7 @@ class Reward extends ResourceBase
     /**
      * Setup the Reward instance
      *
-     * @param CampaignResource $campaign The Starteed Crowdfunding campaign resource that we want to lookup for rewards
+     * @param CampaignResource $campaign The Starteed Self campaign resource that we want to lookup for rewards
      */
     public function __construct(CampaignResource $campaign)
     {
@@ -40,7 +40,7 @@ class Reward extends ResourceBase
     }
 
     /**
-     * Retrieve all the rewards related to Starteed Crowdfunding campaign
+     * Retrieve all the rewards related to Starteed Self campaign
      *
      * @param array   $options Payload to send in order to include additional properties or change per page pagination
      *
