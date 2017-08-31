@@ -2,13 +2,18 @@
 
 namespace Starteed\Resources;
 
-use Starteed\Resources\ResourceBase;
-use Starteed\Resources\CampaignResource;
+use Starteed\BaseResource;
 
-class CurrencyResource extends ResourceBase
+/**
+ * @property string $symbol
+ */
+class CurrencyResource extends BaseResource
 {
-    public function __construct(CampaignResource $campaign, array $data)
+    /**
+     * @param array $data
+     */
+    public function __construct(array $data)
     {
-        parent::__construct($campaign->starteed, '', $data);
+        $this->setData($data);
     }
 }

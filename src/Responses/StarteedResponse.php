@@ -7,20 +7,15 @@ use Starteed\Events\ResponseEvent;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\ResponseInterface;
 
-
 class StarteedResponse implements ResponseInterface
 {
     /**
-     * ResponseInterface to be wrapped by StarteedResponse
-     *
-     * @var ResponseInterface
+     * @var \Psr\Http\Message\ResponseInterface ResponseInterface to be wrapped by StarteedResponse
      */
     protected $response;
 
     /**
-     * Event dispatcher for Response
-     *
-     * @var EventDispatcher
+     * @var \Symfony\Component\EventDispatcher\EventDispatcher Event dispatcher for Response
      */
     protected $dispatcher;
 
@@ -32,7 +27,9 @@ class StarteedResponse implements ResponseInterface
     public function __construct(ResponseInterface $response)
     {
         $this->response = $response;
-        // create the ResponseEvent and dispatching it
+        /*
+         * create the ResponseEvent and dispatching it
+         */
         $event = new ResponseEvent($this->response);
         SelfCrowdfunding::dispatch(ResponseEvent::NAME, $event);
     }
@@ -40,7 +37,7 @@ class StarteedResponse implements ResponseInterface
     /**
      * Returns the body
      *
-     * @return array $body - the json decoded body from the http response
+     * @return array $body JSON decoded body from the HttpResponse
      */
     public function getBody()
     {

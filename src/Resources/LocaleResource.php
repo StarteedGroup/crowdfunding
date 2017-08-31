@@ -4,36 +4,38 @@ namespace Starteed\Resources;
 
 use Starteed\BaseResource;
 use Starteed\Contracts\RequestableInterface;
-use Starteed\Endpoints\UpdatesEndpoint;
 
-class UpdateResource extends BaseResource implements RequestableInterface
+class LocaleResource extends BaseResource implements RequestableInterface
 {
     /**
-     * @var \Starteed\Endpoints\UpdatesEndpoint
+     * @var \Starteed\Resources\PlatformResource
      */
-    protected $updatesEndpoint;
+    protected $platformResource;
 
     /**
-     * @var \Starteed\Resources\UpdateTranslationResource
+     * @var \Starteed\Resources\LanguageResource
      */
-    protected $translation;
+    protected $language;
 
     /**
-     * @param \Starteed\Endpoints\UpdatesEndpoint $updatesEndpoint
-     * @param array                               $data
+     * @param \Starteed\Resources\PlatformResource $platformResource
+     * @param array                                $data
      */
-    public function __construct(UpdatesEndpoint $updatesEndpoint, array $data)
+    public function __construct(PlatformResource $platformResource, array $data)
     {
         $this->setData($data);
 
-        $this->updatesEndpoint = $updatesEndpoint;
+        $this->platformResource = $platformResource;
 
-        $this->translation = new UpdateTranslationResource($this, $this->original['translation']['data']);
+        $this->language = new LanguageResource($data['language']['data']);
     }
 
-    public function translation()
+    /**
+     * @return \Starteed\Resources\LanguageResource
+     */
+    public function language()
     {
-        return $this->translation;
+        return $this->language;
     }
 
     /**
@@ -41,9 +43,9 @@ class UpdateResource extends BaseResource implements RequestableInterface
      *
      * @return string
      */
-    public function getEndpointUri(string $uri)
+    public function getEndpointUri(string $uri = '')
     {
-        return "{$this->original['id']}/$uri";
+        return "locales/{$this->original['id']}/{$uri}";
     }
 
     /**
@@ -55,7 +57,7 @@ class UpdateResource extends BaseResource implements RequestableInterface
      */
     public function get(string $uri, array $payload = [], array $headers = [])
     {
-        return $this->updatesEndpoint->get($this->getEndpointUri($uri), $payload, $headers);
+        return $this->platformResource->get($this->getEndpointUri($uri), $payload, $headers);
     }
 
     /**
@@ -67,7 +69,7 @@ class UpdateResource extends BaseResource implements RequestableInterface
      */
     public function put(string $uri, array $payload = [], array $headers = [])
     {
-        return $this->updatesEndpoint->put($this->getEndpointUri($uri), $payload, $headers);
+        return $this->platformResource->put($this->getEndpointUri($uri), $payload, $headers);
     }
 
     /**
@@ -79,7 +81,7 @@ class UpdateResource extends BaseResource implements RequestableInterface
      */
     public function post(string $uri, array $payload = [], array $headers = [])
     {
-        return $this->updatesEndpoint->post($this->getEndpointUri($uri), $payload, $headers);
+        return $this->platformResource->post($this->getEndpointUri($uri), $payload, $headers);
     }
 
     /**
@@ -91,7 +93,7 @@ class UpdateResource extends BaseResource implements RequestableInterface
      */
     public function delete(string $uri, array $payload = [], array $headers = [])
     {
-        return $this->updatesEndpoint->delete($this->getEndpointUri($uri), $payload, $headers);
+        return $this->platformResource->delete($this->getEndpointUri($uri), $payload, $headers);
     }
 
     /**
@@ -103,6 +105,6 @@ class UpdateResource extends BaseResource implements RequestableInterface
      */
     public function patch(string $uri, array $payload = [], array $headers = [])
     {
-        return $this->updatesEndpoint->patch($this->getEndpointUri($uri), $payload, $headers);
+        return $this->platformResource->patch($this->getEndpointUri($uri), $payload, $headers);
     }
 }

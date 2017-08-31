@@ -1,22 +1,21 @@
-Starteed Crowdfunding PHP API wrapper
+Starteed SELF PHP API wrapper
 --
-Official Starteed Crowdfunding PHP API wrapper: help to read public data of Starteed Crowdfunding campaigns.
+Official Starteed SELF PHP API wrapper: help to read public data of Starteed SELF campaigns.
 
 Widely inspired by [Sparkpost PHP API wrapper](https://github.com/SparkPost/php-sparkpost).
 
 Still in **alpha** version.
 
-No authentication is needed due to public data access.
+Authentication is provided with API key: contact our support to get one.
 
 
 ## Installation
----
 
 Install Composer first
 
     curl -sS https://getcomposer.org/installer | php
 
-Starteed Crowdfunding requires php-http client: we suggest Guzzle6.
+Starteed SELF requires a php-http client: we suggest Guzzle6.
 
     composer require php-http/guzzle6-adapter
 
@@ -26,8 +25,11 @@ Next install the package.
 
 
 ## Setting up a Request Adapter
----
-Because of dependency collision, we have opted to use a request adapter rather than requiring a request library. This means that your application will need to pass in a request adapter to the constructor of the Starteed Crowdfunding Library (we choose HTTPlug) Please visit their repo for a list of supported clients and adapters. If you don't currently use a request library, you will need to require one and create a client from it and pass it along. The example below uses the GuzzleHttp Client Library.
+Because of dependency collision, we have opted to use a request adapter rather than requiring a request library.
+This means that your application will need to pass in a request adapter to the constructor of the Starteed SELF Library
+(we chose HttpPlug). Please visit their repo for a list of supported clients and adapters. If you don't currently use a
+request library, you will need to require one and create a client from it and pass it along. The example below uses the
+GuzzleHttp Client Library.
 
 A Client can be setup like so:
 
@@ -36,7 +38,7 @@ A Client can be setup like so:
     require_once __DIR__ . '/vendor/autoload.php';
     
     use GuzzleHttp\Client;
-    use Starteed\Crowdfunding;
+    use Starteed\SelfCrowdfunding;
     use Http\Adapter\Guzzle6\Client as GuzzleAdapter;
     
     $http_client = new GuzzleAdapter(new Client);
@@ -47,8 +49,8 @@ A Client can be setup like so:
     ?>
 
 ## Localization
----
-Localization is provided by Accept-Language header: you can pass a dash or underscore value (e.g.: it_IT or it-IT) or just the language ISO code in the configuration array.
+Localization is provided by Accept-Language header: you can pass a dash or underscore value (e.g.: it_IT or it-IT) or
+just the language ISO code in the configuration array.
 
     $http_client = new GuzzleAdapter(new Client);
     $starteed = new Crowdfunding($http_client, [
@@ -56,31 +58,20 @@ Localization is provided by Accept-Language header: you can pass a dash or under
         'language' => 'en_US'
     ]);
 
-*Note that if the language locale is not available all the results will be translated with default language as fallback option.*
+*Note that if the language locale is not available all the results will be translated with default language as fallback*
 
 ## Campaigns
----
+
 ### Paginated results
-    $campaigns = $starteed->campaigns->all();
-    // PHP object accessing
-    {
-      "data": [
-        // Array of available campaigns
-       ],
-       "pagination": {
-         "total": 1,
-         "count": 1,
-         "per_page": 20,
-         "current_page": 1,
-         "total_pages": 1,
-         "links": [],
-       }
-    }
+    /**
+     * @var Starteed\Resources\CampaignResource[] $campaigns
+     */
+    $campaigns = $starteed->campaigns()->all();
     
     // Grabbing first element of the data array
-    $campaign = $campaigns->data[0];
+    $campaign = $campaigns()->data[0];
     
-    $campaign->title
+    $campaign->translation->title
     # My campaign title
     
     $campaign->goal
@@ -98,9 +89,9 @@ Localization is provided by Accept-Language header: you can pass a dash or under
     # Euro
 
 ### Retrieve by ID
-    $campaign = $starteed->campaigns->retrieve(1);
+    $campaign = $starteed->campaigns()->retrieve(1);
     
-    $campaign->title
+    $campaign->translation->title
     # My campaign title
     
     $campaign->goal
@@ -114,27 +105,16 @@ Localization is provided by Accept-Language header: you can pass a dash or under
     #}
 
 # Rewards
----
+
 ### Paginated results
 
-    $rewards = $starteed->campaigns->retrieve(1)->rewards->all();
-    // PHP object accessing
-    {
-      "data": [
-        // Array of available rewards
-       ],
-       "pagination": {
-         "total": 5,
-         "count": 5,
-         "per_page": 20,
-         "current_page": 1,
-         "total_pages": 1,
-         "links": [],
-       }
-    }
-    
+    /**
+     * @var Starteed\Resources\RewardResource[] $rewards
+     */
+    $rewards = $starteed->campaigns()->retrieve(1)->rewards->all();
+        
     // Grabbing first element of the data array
-    $reward = $campaigns->data[0];
+    $reward = $campaigns()->data[0];
     
     $reward->image
     # "rewards/57fcce15a573a.jpg"
@@ -143,81 +123,57 @@ Localization is provided by Accept-Language header: you can pass a dash or under
     # true
     
     $reward->estimated_shipping
-    #1476662400
+    # 1476662400
     
-    $reward->description
+    $reward->translation->description
     # The reward description chosen by campaign admin
 
 ### Retrieve by ID
 
-    $reward = $starteed->campaigns->retrieve(1)->rewards->retrieve(2);
+    $reward = $starteed->campaigns()->retrieve(1)->rewards()->retrieve(2);
     
     $reward->amount
     # 50
 
 # FAQs
----
+
 ### Paginated results
 
-    $faqs = $starteed->campaigns->retrieve(1)->faqs->all();
-    // PHP object accessing
-    {
-      "data": [
-        // Array of available faqs
-       ],
-       "pagination": {
-         "total": 5,
-         "count": 5,
-         "per_page": 20,
-         "current_page": 1,
-         "total_pages": 1,
-         "links": [],
-       }
-    }
+    /**
+     * @var Starteed\Resources\FaqResource[] $faqs
+     */
+    $faqs = $starteed->campaigns()->retrieve(1)->faqs->all();
     
     // Grabbing first element of the data array
-    $faq = $campaigns->data[0];
+    $faq = $faqs[0];
     
-    $faq->question
+    $faq->translation->question
     # "Is this a question?"
     
-    $faq->answer
+    $faq->translation->answer
     # "It looks like it!"
 
 ### Retrieve by ID
 
-    $faq = $starteed->campaigns->retrieve(1)->faqs->retrieve(2);
+    $faq = $starteed->campaigns()->retrieve(1)->faqs()->retrieve(2);
     
-    $faq->question
+    $faq->translation->question
     # "Are donations deductible?"
     
-    $faq->answer
+    $faq->translation->answer
     # "Yes, of course: you will receive a receipt via email once the donation is confirmed!"
 
-# Supporters
----
+# Donors
+
 ### Paginated results
 
-    $supporters = $starteed->campaigns->retrieve(1)->supporters->all();
-    // PHP object accessing
-    {
-      "data": [
-        // Array of donators/supporters
-       ],
-       "pagination": {
-         "total": 20,
-         "count": 20,
-         "per_page": 20,
-         "current_page": 1,
-         "total_pages": 2,
-         "links": [
-             "next": "https://api.starteed.com/v1/campaigns/1/supporters/?page=2"
-         ],
-       }
-    }
+    /**
+     * @var Starteed\Resources\DonorResource[] $donors
+     */
+     $donors = $starteed->campaigns()->retrieve(1)->donors()->all();
     
     // Grabbing first element of the data array
-    $supporter = $supporters->data[0];
+    $donor = $donors[0];
     
     $supporter->firstname
     # "John"
@@ -227,7 +183,7 @@ Localization is provided by Accept-Language header: you can pass a dash or under
 
 ### Retrieve by ID
 
-    $supporter = $starteed->campaigns->retrieve(1)->supporters->retrieve(2);
+    $donnor = $starteed->campaigns()->retrieve(1)->donors()->retrieve(2);
     
-    $faq->email
+    $donor->email
     # "john.doe@starteed.com"

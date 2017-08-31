@@ -7,7 +7,7 @@ interface CollectionInterface
     /**
      * @param array $options
      *
-     * @return array|\Starteed\Contracts\RequestableInterface[]
+     * @return \Starteed\Contracts\RequestableInterface[]
      */
-    public function all(array $options = []): array;
+    public function all(array $options);
 }

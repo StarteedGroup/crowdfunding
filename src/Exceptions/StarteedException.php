@@ -19,9 +19,14 @@ class StarteedException extends \Exception
     protected $message;
 
     /**
+     * @var int
+     */
+    protected $code;
+
+    /**
      * Sets up the custom exception and copies over original exception values.
      *
-     * @param \Http\Client\Exception\HttpException $exception The exception to be wrapped
+     * @param \Http\Client\Exception\HttpException $exception Exception to be wrapped
      */
     public function __construct(HttpException $exception)
     {

@@ -10,15 +10,27 @@ use Symfony\Component\EventDispatcher\Event;
  */
 class ResponseEvent extends Event
 {
+    /**
+     * @const Event name
+     */
     const NAME = 'starteed.response';
 
+    /**
+     * @var \Psr\Http\Message\ResponseInterface
+     */
     protected $response;
 
+    /**
+     * @param \Psr\Http\Message\ResponseInterface $response
+     */
     public function __construct(ResponseInterface $response)
     {
         $this->response = $response;
     }
 
+    /**
+     * @return \Psr\Http\Message\ResponseInterface
+     */
     public function getResponse()
     {
         return $this->response;

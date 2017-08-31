@@ -2,13 +2,19 @@
 
 namespace Starteed\Resources;
 
-use Starteed\Resources\ResourceBase;
-use Starteed\Resources\DonationResource;
+use Starteed\BaseResource;
 
-class MethodResource extends ResourceBase
+/**
+ * @property boolean $is_paypal
+ * @property boolean $is_bank_transfer
+ */
+class MethodResource extends BaseResource
 {
-    public function __construct(DonationResource $donation, array $data)
+    /**
+     * @param array $data
+     */
+    public function __construct(array $data)
     {
-        parent::__construct($donation->starteed, "", $data);
+        $this->setData($data);
     }
 }

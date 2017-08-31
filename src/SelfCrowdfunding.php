@@ -2,16 +2,18 @@
 
 namespace Starteed;
 
-use Http\Client\Exception\HttpException;
 use Http\Client\HttpClient;
 use Http\Message\RequestFactory;
 use Starteed\Responses\JWTResponse;
 use Starteed\Events\BlacklistedEvent;
-use Psr\Http\Message\RequestInterface;
 use Starteed\Responses\StarteedResponse;
+use Starteed\Endpoints\SectionsEndpoint;
+use Http\Client\Exception\HttpException;
+use Starteed\Endpoints\PlatformEndpoint;
+use Starteed\Endpoints\CampaignsEndpoint;
 use Starteed\Exceptions\StarteedException;
 use Http\Discovery\MessageFactoryDiscovery;
-use Symfony\Component\EventDispatcher\Event;
+use Starteed\Contracts\SelfCrowdfundingInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
@@ -27,47 +29,35 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
  * @license  http://www.gnu.org/copyleft/gpl.html GNU General Public License
  * @link     https://starteed.com
  */
-class SelfCrowdfunding
+class SelfCrowdfunding implements SelfCrowdfundingInterface
 {   
     /**
-     * Library version, used for setting User-Agent
-     *
-     * @var string
+     * @var string Library version, used for setting User-Agent
      */
     protected $version = '0.1';
 
     /**
-     * HTTP client used to make requests
-     *
-     * @var \Http\Client\HttpClient
+     * @var \Http\Client\HttpClient HTTP client used to make requests
      */
     protected $httpClient;
 
     /**
-     * The chosen message factory
-     *
-     * @var \Http\Message\RequestFactory
+     * @var \Http\Message\RequestFactory The chosen message factory
      */
     protected $messageFactory;
 
     /**
-     * JWT token used as authentication bearer
-     *
-     * @var string
+     * @var string JWT token used as authentication bearer
      */
     protected static $token;
 
     /**
-     * Options for requests
-     *
-     * @var array
+     * @var array Options for requests
      */
     protected $options;
 
     /**
-     * Default options for requests that can be overridden with the setOptions function.
-     *
-     * @var array
+     * @var array Default options for requests that can be overridden with the setOptions function.
      */
     protected static $defaultOptions = [
         'host' => 'api.starteed.com',
@@ -81,90 +71,84 @@ class SelfCrowdfunding
     ];
 
     /**
-     * Instance of Platform class
-     *
-     * @var PlatformEndpoint
+     * @var \Starteed\Endpoints\PlatformEndpoint Instance of Platform class
      */
-    public $platform;
+    protected $platform;
 
     /**
-     * Instance of General class
-     *
-     * @var General
+     * @var \Starteed\Endpoints\SectionsEndpoint Instance of Section class
      */
-    public $general;
+    protected $sections;
 
     /**
-     * Instance of Layout class
-     *
-     * @var General
+     * @var \Starteed\Endpoints\CampaignsEndpoint Instance of Campaign class
      */
-    public $layout;
+    protected $campaigns;
 
     /**
-     * Instance of Version class
-     *
-     * @var Version
-     */
-    public $versions;
-
-    /**
-     * Instance of Section class
-     *
-     * @var Version
-     */
-    public $sections;
-
-    /**
-     * Instance of Campaign class
-     *
-     * @var Campaign
-     */
-    public $campaigns;
-
-    /**
-     * The event dispatcher of Starteed Self
-     *
-     * @var EventDispatcher
+     * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface Starteed SELF event dispatcher
      */
     public static $dispatcher;
 
     /**
-     * Sets up the Self instance.
+     * Sets up the SELF API wrapper instance
      *
-     * @param HttpClient $http_client - An httplug client or adapter
-     * @param array      $options     - An array to overide default options
+     * @param \Http\Client\HttpClient $httpClient HTTP adapter
+     * @param array                   $options    Override options
      */
-    public function __construct(HttpClient $http_client, array $options)
+    public function __construct(HttpClient $httpClient, array $options)
     {
+        $this->setHttpClient($httpClient);
         $this->setOptions($options);
-        $this->setHttpClient($http_client);
-        $this->setupEndpoints();
+
+        $this->platform = new PlatformEndpoint($this);
+        $this->campaigns = new CampaignsEndpoint($this);
+        $this->sections = new SectionsEndpoint($this);
     }
 
     /**
-     * Wrapper for Symfony EventDispatcher
+     * @return \Starteed\Endpoints\PlatformEndpoint
+     */
+    public function platform()
+    {
+        return $this->platform;
+    }
+
+    public function campaigns()
+    {
+        return $this->campaigns;
+    }
+
+    /**
+     * @return \Starteed\Endpoints\SectionsEndpoint
+     */
+    public function sections()
+    {
+        return $this->sections;
+    }
+
+    /**
+     * Wrapper for event dispatcher
      *
-     * @param string $name  The event name
-     * @param Event  $event Interface of Event
+     * @param string                                   $name  Event name
+     * @param \Symfony\Component\EventDispatcher\Event $event Interface of Event
      *
      * @return \Symfony\Component\EventDispatcher\Event
      */
-    public static function dispatch($name, Event $event)
+    public static function dispatch($name, $event)
     {
         return static::getDispatcher()->dispatch($name, $event);
     }
 
     /**
-     * Getter for Singleton for Event Dispatcher
+     * Singleton getter for event dispatcher
      *
-     * @return EventDispatcher
+     * @return \Symfony\Component\EventDispatcher\EventDispatcherInterface
      */
     public static function getDispatcher()
     {
         if (!static::$dispatcher) {
             static::$dispatcher = new EventDispatcher();
-
         }
         return static::$dispatcher;
     }
@@ -187,10 +171,11 @@ class SelfCrowdfunding
      */
     public function request($method = 'GET', $uri = '', $payload = [], $headers = [])
     {
+        $request = $this->buildRequest($method, $uri, $payload, $headers);
         try {
-            $request = $this->buildRequest($method, $uri, $payload, $headers);
             return new StarteedResponse($this->httpClient->sendRequest($request));
         } catch (HttpException $exception) {
+            dd($exception);
             $exception = new StarteedException($exception);
             if ($exception->getMessage() === 'The token has been blacklisted') {
                 static::dispatch(BlacklistedEvent::NAME, new BlacklistedEvent($this, $request));
@@ -201,8 +186,8 @@ class SelfCrowdfunding
         try {
             $request = $this->buildRequest($method, $uri, $payload, $headers);
             return new StarteedResponse($this->httpClient->sendRequest($request));
-        } catch (HttpException $e) {
-            throw new StarteedException($e);
+        } catch (HttpException $exception) {
+            throw new StarteedException($exception);
         }
     }
 
@@ -216,7 +201,7 @@ class SelfCrowdfunding
      *
      * @return \Psr\Http\Message\RequestInterface
      */
-    public function buildRequest($method, $uri, $payload, $headers)
+    protected function buildRequest($method, $uri, $payload, $headers)
     {
         $method = trim(strtoupper($method));
         if ($method === 'GET') {
@@ -230,9 +215,7 @@ class SelfCrowdfunding
         }
         $url = $this->getUrl($uri, $params);
         $headers = $this->getHttpHeaders($headers);
-        /*
-         * Starteed Self API will not tolerate form feed in JSON.
-         */
+        // Starteed SELF API does not tolerate form feed in JSON.
         $jsonReplace = [
             '\f' => '',
         ];
@@ -247,21 +230,19 @@ class SelfCrowdfunding
      *
      * @return array $headers Headers for the Request
      */
-    public function getHttpHeaders($headers = [])
+    protected function getHttpHeaders($headers = [])
     {
         $constantHeaders = [
-            'User-Agent' => 'php-starteed-crowdfunding/'.$this->version,
+            'User-Agent' => "php-starteed-self/{$this->version}",
             'Content-Type' => 'application/json',
             'Accept-Language' => $this->options['language'],
             'X-Platform' => $this->options['platform'],
         ];
-        if (static::getAuthToken()) {
-            $constantHeaders['Authorization'] = 'Bearer ' . static::getAuthToken();
-
+        if ($token = $this->getAuthToken()) {
+            $constantHeaders['Authorization'] = "Bearer {$token}";
         }
         foreach ($constantHeaders as $key => $value) {
             $headers[$key] = $value;
-
         }
         return $headers;
     }
@@ -269,50 +250,51 @@ class SelfCrowdfunding
     /**
      * Builds the request url from the options and given params.
      *
-     * @param string $path   - the path in the url to hit
-     * @param array  $params - query parameters to be encoded into the url
+     * @param string $path   Path URL to hit
+     * @param array  $params Query parameters to be encoded
      *
-     * @return string $url - the url to send the desired request to
+     * @return string $url Composed URL to send the desired request to
      */
-    public function getUrl($path, $params = [])
+    protected function getUrl($path, $params = [])
     {
         $options = $this->options;
         $paramsArray = [];
         foreach ($params as $key => $value) {
             if ($key == 'where' && is_array($value)) {
                 foreach ($value as $where => $value) {
-                    if ( is_array($value) ) {
+                    if (is_array($value)) {
                         array_push(
                             $paramsArray,
-                            $key . '[' . $where . '][operator]' . '=' . $value['operator']
+                            "{$key}[{$where}][operator]={$value['operator']}"
                         );
                         array_push(
                             $paramsArray,
-                            $key . '[' . $where . '][value]' . '=' . $value['value']
+                            "{$key}[{$where}][value]={$value['value']}"
                         );
-
                     } else {
-                        array_push($paramsArray, $key.'['.$where.']'.'='.$value);
-
+                        array_push($paramsArray, "{$key}[{$where}]={$value}");
                     }
                 }
-
             } else {
-                array_push($paramsArray, $key.'='.$value);
-
+                array_push($paramsArray, "{$key}={$value}");
             }
-
         }
         $paramsString = implode('&', $paramsArray);
-        return $options['protocol'].'://'.$options['host'].($options['port'] ? ':'.$options['port'] : '').'/'.$options['version'].'/'.$path.($paramsString ? '?'.$paramsString : '');
+
+        return sprintf('%s://%s:%d/%s/%s/%s',
+            $options['protocol'],
+            $options['host'],
+            $options['port'],
+            $options['version'],
+            $path ?: null,
+            $paramsString ? "?{$paramsString}": null
+        );
     }
 
     /**
-     * Sets $http_client to be used for request
+     * Sets request Http client
      *
-     * @param \Http\Client\HttpClient $httpClient The client to be used for request
-     *
-     * @return void
+     * @param \Http\Client\HttpClient $httpClient Client used for request
      */
     public function setHttpClient(HttpClient $httpClient)
     {
@@ -320,16 +302,13 @@ class SelfCrowdfunding
     }
 
     /**
-     * Sets the options from the param and defaults for the Starteed Self object
+     * Sets and override default options.
      *
      * @param array $options Array of options: platform hostname is mandatory
-     *
-     * @return void
      */
-    public function setOptions(array $options)
+    protected function setOptions(array $options)
     {
         $this->options = isset($this->options) ? $this->options : static::$defaultOptions;
-        // set options, overriding defaults
         foreach ($options as $option => $value) {
             if (key_exists($option, $this->options)) {
                 $this->options[$option] = $value;
@@ -338,33 +317,14 @@ class SelfCrowdfunding
     }
 
     /**
-     * Set up endpoints for tree traversing.
-     *
-     * @return void
-     */
-    protected function setupEndpoints()
-    {
-        $this->platform = new PlatformEndpoint($this);
-        $this->campaigns = new CampaignsEndpoint($this);
-        $this->general = new GeneralEndpoint($this);
-
-
-
-        $this->layout = new Layout($this);
-        $this->versions = new Version($this);
-        $this->sections = new Section($this);
-    }
-
-    /**
      * Return discovered and available Message Factory
      *
      * @return \Http\Message\RequestFactory
      */
-    protected function getMessageFactory()
+    public function getMessageFactory()
     {
         if (!$this->messageFactory) {
             $this->messageFactory = MessageFactoryDiscovery::find();
-
         }
         return $this->messageFactory;
     }
@@ -373,13 +333,10 @@ class SelfCrowdfunding
      * Enable override of Message Factory
      *
      * @param \Http\Message\RequestFactory $messageFactory The choosen message factory
-     *
-     * @return \Starteed\SelfCrowdfunding
      */
     public function setMessageFactory(RequestFactory $messageFactory)
     {
         $this->messageFactory = $messageFactory;
-        return $this;
     }
 
     /**
@@ -391,14 +348,14 @@ class SelfCrowdfunding
      *
      * @throws \Starteed\Exceptions\StarteedException
      */
-    public function login($key)
+    public function login(string $key)
     {
         try {
             $request = $this->buildRequest('POST', 'login', ['key' => $key], []);
             $response = new JWTResponse( $this->httpClient->sendRequest($request) );
             static::setAuthToken( $response->getBody()['token'] );
             return $response;
-        } catch (\Exception $exception) {
+        } catch (HttpException $exception) {
             throw new StarteedException($exception);
         }
     }
@@ -410,9 +367,7 @@ class SelfCrowdfunding
      */
     public static function getAuthToken()
     {
-        if (static::$token) {
-            return static::$token;
-        }
+        return static::$token;
     }
 
     /**
@@ -420,7 +375,7 @@ class SelfCrowdfunding
      *
      * @param string $jwt The JSON Web Token obtained via login or refresh
      */
-    public static function setAuthToken($jwt)
+    public static function setAuthToken(string $jwt)
     {
         static::$token = $jwt;
     }

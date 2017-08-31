@@ -4,7 +4,7 @@ namespace Starteed\Resources;
 
 use Starteed\BaseResource;
 
-class LanguageResource extends BaseResource
+class FontResource extends BaseResource
 {
     /**
      * @param array $data

@@ -2,13 +2,20 @@
 
 namespace Starteed\Resources;
 
-use Starteed\Resources\ResourceBase;
-use Starteed\Resources\CampaignResource;
+use Starteed\BaseResource;
 
-class FundingResource extends ResourceBase
+/**
+ * @property bool   $is_keep_it_all
+ * @property bool   $is_all_or_nothing
+ * @property string $label
+ */
+class FundingResource extends BaseResource
 {
-    public function __construct(CampaignResource $campaign, array $data)
+    /**
+     * @param array $data
+     */
+    public function __construct(array $data)
     {
-        parent::__construct($campaign->starteed, '', $data);
+        $this->setData($data);
     }
 }

@@ -3,50 +3,75 @@
 namespace Starteed\Resources;
 
 use Starteed\BaseResource;
-use Starteed\PlatformEndpoint;
-use Starteed\SelfCrowdfunding;
+use Starteed\Endpoints\PlatformEndpoint;
 use Starteed\Responses\StarteedResponse;
 use Starteed\Contracts\RequestableInterface;
 
+/**
+ * @property string $title
+ */
 class PlatformResource extends BaseResource implements RequestableInterface
 {
     /**
-     * @var \Starteed\PlatformEndpoint
+     * @var \Starteed\Endpoints\PlatformEndpoint
      */
-    protected $endpoint;
+    protected $platformEndpoint;
 
     /**
-     * @var array
+     * @var \Starteed\Resources\CurrencyResource
      */
-    private $original;
+    private $currencyResource;
 
     /**
-     * @var array
+     * @var \Starteed\Resources\LayoutResource
      */
-    private $meta;
+    protected $layoutResource;
 
     /**
-     * @var array
+     * @var \Starteed\Resources\LocaleResource[]
      */
-    public $data;
+    protected $localeResources;
 
     /**
      * PlatformResource constructor.
      *
-     * @param \Starteed\PlatformEndpoint           $platformEndpoint
-     * @param \Starteed\Responses\StarteedResponse $response
+     * @param \Starteed\Endpoints\PlatformEndpoint $platformEndpoint
+     * @param array                                $data
      */
-    public function __construct(PlatformEndpoint $platformEndpoint, StarteedResponse $response)
+    public function __construct(PlatformEndpoint $platformEndpoint, array $data)
     {
-        $this->endpoint = $platformEndpoint;
+        $this->platformEndpoint = $platformEndpoint;
+        $this->setData($data);
 
-        $body = $response->getBody();
-        $this->meta = array_key_exists('meta', $body) ? $body['meta'] : [];
-        $this->data = array_key_exists('data', $body) ? $body['data'] : [];
-        /*
-         * Original data is private in order to do comparison for PATCH request auto-completion
-         */
-        $this->original = $this->data;
+        $this->layoutResource = new LayoutResource($this, $this->original['layout']['data']);
+        $this->currencyResource = new CurrencyResource($this->original['currency']['data']);
+        $this->localeResources = array_map(function($locale) {
+            return new LocaleResource($this, $locale);
+        }, $this->original['locales']['data']);
+    }
+
+    /**
+     * @return \Starteed\Resources\LayoutResource
+     */
+    public function layout()
+    {
+        return $this->layoutResource;
+    }
+
+    /**
+     * @return \Starteed\Resources\LocaleResource[]
+     */
+    public function locales()
+    {
+        return $this->localeResources;
+    }
+
+    /**
+     * @return \Starteed\Resources\CurrencyResource
+     */
+    public function currency()
+    {
+        return $this->currencyResource;
     }
 
     /**
@@ -56,25 +81,7 @@ class PlatformResource extends BaseResource implements RequestableInterface
      */
     public function getEndpointUri(string $uri): string
     {
-        return $this->endpoint->getEndpointUri($uri);
-    }
-
-    /**
-     * @return \Starteed\SelfCrowdfunding
-     */
-    public function getStarteedEndpoint(): SelfCrowdfunding
-    {
-        return $this->endpoint->getStarteedEndpoint();
-    }
-
-    /**
-     * @param \Starteed\SelfCrowdfunding $endpoint
-     *
-     * @return mixed
-     */
-    public function setStarteedEndpoint(SelfCrowdfunding $endpoint)
-    {
-        $this->endpoint = $endpoint;
+        return $uri;
     }
 
     /**
@@ -86,7 +93,7 @@ class PlatformResource extends BaseResource implements RequestableInterface
      */
     public function get(string $uri = '', array $payload = [], array $headers = []): StarteedResponse
     {
-        return $this->endpoint->get($this->getEndpointUri($uri), $payload, $headers);
+        return $this->platformEndpoint->get($this->getEndpointUri($uri), $payload, $headers);
     }
 
     /**
@@ -98,7 +105,7 @@ class PlatformResource extends BaseResource implements RequestableInterface
      */
     public function put(string $uri = '', array $payload = [], array $headers = []): StarteedResponse
     {
-        return $this->endpoint->put($this->getEndpointUri($uri), $payload, $headers);
+        return $this->platformEndpoint->put($this->getEndpointUri($uri), $payload, $headers);
     }
 
     /**
@@ -110,7 +117,7 @@ class PlatformResource extends BaseResource implements RequestableInterface
      */
     public function post(string $uri = '', array $payload = [], array $headers = []): StarteedResponse
     {
-        return $this->endpoint->post($this->getEndpointUri($uri), $payload, $headers);
+        return $this->platformEndpoint->post($this->getEndpointUri($uri), $payload, $headers);
     }
 
     /**
@@ -122,7 +129,7 @@ class PlatformResource extends BaseResource implements RequestableInterface
      */
     public function delete(string $uri = '', array $payload = [], array $headers = []): StarteedResponse
     {
-        return $this->endpoint->delete($this->getEndpointUri($uri), $payload, $headers);
+        return $this->platformEndpoint->delete($this->getEndpointUri($uri), $payload, $headers);
     }
 
     /**
@@ -134,6 +141,6 @@ class PlatformResource extends BaseResource implements RequestableInterface
      */
     public function patch(string $uri = '', array $payload = [], array $headers = []): StarteedResponse
     {
-        return $this->endpoint->patch($this->getEndpointUri($uri), $payload, $headers);
+        return $this->platformEndpoint->patch($this->getEndpointUri($uri), $payload, $headers);
     }
 }
