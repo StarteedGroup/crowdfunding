@@ -175,7 +175,6 @@ class SelfCrowdfunding implements SelfCrowdfundingInterface
         try {
             return new StarteedResponse($this->httpClient->sendRequest($request));
         } catch (HttpException $exception) {
-            dd($exception);
             $exception = new StarteedException($exception);
             if ($exception->getMessage() === 'The token has been blacklisted') {
                 static::dispatch(BlacklistedEvent::NAME, new BlacklistedEvent($this, $request));
