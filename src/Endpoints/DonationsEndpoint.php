@@ -174,7 +174,8 @@ class DonationsEndpoint extends BaseRequest implements ItemInterface, Collection
             ],
             'limit' => 24,
             'page' => $page,
-            'order_by'
+            'order_by' => 'SYSTEM_CreatedAt',
+            'direction' => 'DESC'
         ]);
     }
 }
